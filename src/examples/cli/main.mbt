@@ -26,7 +26,8 @@ async fn main {
         examples=[
           "myapp greet --name Alice", "myapp greet --name Bob --loud --count 3",
         ],
-        run=Some(fn(ctx) {
+        run=Some(async fn(ctx) {
+          @async.sleep(0)
           let name = ctx.get_string_required("name") catch { _ => return }
           let loud = ctx.get_bool("loud")
           let count = match ctx.get_int("count") {
@@ -62,7 +63,8 @@ async fn main {
               examples=[
                 "myapp db migrate up", "myapp db migrate up --dry-run", "myapp db migrate up --steps 5",
               ],
-              run=Some(fn(ctx) {
+              run=Some(async fn(ctx) {
+                @async.sleep(0)
                 let dry = ctx.get_bool("dry-run")
                 let steps = ctx.get_int("steps")
                 if dry {
@@ -88,7 +90,8 @@ async fn main {
                   default=Some(1),
                 ),
               ],
-              run=Some(fn(ctx) {
+              run=Some(async fn(ctx) {
+                @async.sleep(0)
                 let steps = match ctx.get_int("steps") {
                   Some(n) => n
                   None => 1
@@ -112,7 +115,8 @@ async fn main {
               default=Some("seeds/default.sql"),
             ),
           ],
-          run=Some(fn(ctx) {
+          run=Some(async fn(ctx) {
+            @async.sleep(0)
             let file = match ctx.get_string("file") {
               Some(f) => f
               None => "seeds/default.sql"
