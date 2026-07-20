@@ -18,7 +18,7 @@ Add to `moon.mod`:
 
 ```moonbit
 import {
-  "totto2727/admiral@0.2.0",
+  "totto2727/admiral@0.2.1",
   "moonbitlang/async@0.19.2",
 }
 
