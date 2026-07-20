@@ -16,7 +16,7 @@ Add to `moon.mod`:
 
 ```moonbit
 import {
-  "totto2727/admiral@0.1.0",
+  "totto2727/admiral@0.2.0",
   "moonbitlang/async@0.19.2",
 }
 
@@ -401,7 +401,7 @@ app.run(argv=Some(["greet", "--name", "x"])) // explicit args (for testing)
 
 ## Targets
 
-Native is the preferred target. This follows the current support level of the official `moonbitlang/async` runtime.
+Admiral supports the native target. This follows the current support level of the official `moonbitlang/async` runtime.
 
 ## License
 
