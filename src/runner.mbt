@@ -93,7 +93,7 @@ pub async fn CliApp::run(self : CliApp, argv? : Array[String]? = None) -> Unit {
     flags~,
     options~,
     subcommands~,
-    arg_required_else_help=self.commands.length() > 0,
+    arg_required_else_help=true,
   )
   let matches = match argv {
     Some(args) => argparse_cmd.parse(argv=args)

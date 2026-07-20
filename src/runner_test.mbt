@@ -79,3 +79,39 @@ async test "cli run with nested async subcommand" {
   app.run(argv=Some(["db", "migrate", "--dry-run"]))
   inspect(result.val, content="dry")
 }
+
+///|
+async test "command errors still propagate" {
+  let app = cli(name="test-app", commands=[
+    command(name="fail", run=Some(_ctx => fail("command failed"))),
+  ])
+  let error_propagated = Ref(false)
+  app.run(argv=Some(["fail"])) catch {
+    _ => error_propagated.val = true
+  }
+  inspect(error_propagated.val, content="true")
+}
+
+///|
+async test "unknown commands still fail" {
+  let app = cli(name="test-app", commands=[
+    command(name="run", run=Some(fn(_ctx) { () })),
+  ])
+  let error_propagated = Ref(false)
+  app.run(argv=Some(["unknown"])) catch {
+    _ => error_propagated.val = true
+  }
+  inspect(error_propagated.val, content="true")
+}
+
+///|
+async test "invalid options still fail" {
+  let app = cli(name="test-app", commands=[
+    command(name="run", run=Some(fn(_ctx) { () })),
+  ])
+  let error_propagated = Ref(false)
+  app.run(argv=Some(["run", "--unknown"])) catch {
+    _ => error_propagated.val = true
+  }
+  inspect(error_propagated.val, content="true")
+}

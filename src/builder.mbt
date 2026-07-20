@@ -54,6 +54,11 @@ fn build_positional(pos : PositionalDef) -> @argparse.PositionArg {
 }
 
 ///|
+fn fallback_to_help_when_no_match(cmd : CommandDef) -> Bool {
+  cmd.run is None
+}
+
+///|
 pub fn build_command(cmd : CommandDef) -> @argparse.Command {
   let flags : Array[@argparse.FlagArg] = []
   let options : Array[@argparse.OptionArg] = []
@@ -72,6 +77,6 @@ pub fn build_command(cmd : CommandDef) -> @argparse.Command {
     options~,
     positionals~,
     subcommands~,
-    arg_required_else_help=cmd.subcommands.length() > 0 && cmd.run is None,
+    arg_required_else_help=fallback_to_help_when_no_match(cmd),
   )
 }
