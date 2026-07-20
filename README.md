@@ -2,6 +2,8 @@
 
 Declarative CLI builder for MoonBit, inspired by [gunshi](https://github.com/kazupon/gunshi).
 
+This repository is a fork of [mizchi/admiral](https://github.com/mizchi/admiral). It preserves the upstream MIT license and adds async-first native command execution and help fallback behavior.
+
 A native-first wrapper around `moonbitlang/core/argparse` that provides:
 
 - Typed option helpers (`string`, `bool`, `int`, `positional`)
@@ -397,7 +399,7 @@ app.run()                                    // use process args
 app.run(argv=Some(["greet", "--name", "x"])) // explicit args (for testing)
 ```
 
-`CliApp::run` is async. Call it from `async fn main` or `async test`; no task-group wrapper is required. `--help` and `--version` are automatically handled by argparse. Invoking the app without a command, or a command group without its required subcommand, displays the corresponding help.
+`CliApp::run` is async. Call it from `async fn main` or `async test`; no task-group wrapper is required. `--help` and `--version` are automatically handled by argparse. Invoking the app without a runnable command, or a command group without its required subcommand, displays the corresponding help. Unknown commands, invalid options, and errors raised by command callbacks remain errors.
 
 ## Targets
 
@@ -405,4 +407,6 @@ Admiral supports the native target. This follows the current support level of th
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
+
+The upstream project declares its original license as MIT in [mizchi/admiral's module manifest](https://github.com/mizchi/admiral/blob/main/moon.mod.json).
