@@ -2,38 +2,40 @@
 
 Declarative CLI builder for MoonBit, inspired by [gunshi](https://github.com/kazupon/gunshi).
 
-A thin wrapper around `moonbitlang/core/argparse` that provides:
+A native-first wrapper around `moonbitlang/core/argparse` that provides:
 
 - Typed option helpers (`string`, `bool`, `int`, `positional`)
-- Nested subcommand definitions with `run` callbacks
+- Async `run` callbacks for commands and nested subcommands
 - Structured JSON schema output for AI agent integration
 - Shell completion generation (bash, zsh, fish)
-- Auto-generated `--help` / `--version`
+- Auto-generated `--help` / `--version`, including help for incomplete command paths
 
 ## Install
 
-Add to `moon.mod.json`:
+Add to `moon.mod`:
 
-```json
-{
-  "deps": {
-    "mizchi/admiral": "0.1.0"
-  }
+```moonbit
+import {
+  "totto2727/admiral@0.1.0",
+  "moonbitlang/async@0.19.2",
 }
+
+preferred_target = "native"
 ```
 
-Add to `moon.pkg.json`:
+Add to `moon.pkg`:
 
-```json
-{
-  "import": ["mizchi/admiral"]
+```moonbit
+import {
+  "totto2727/admiral" @admiral,
+  "moonbitlang/async",
 }
 ```
 
 ## Quick Start
 
 ```moonbit
-fn main {
+async fn main {
   let app = @admiral.cli(
     name="myapp",
     version="1.0.0",
@@ -48,7 +50,7 @@ fn main {
           @admiral.int("count", short='c', description="Repeat count", default=Some(1)),
         ],
         examples=["myapp greet --name Alice", "myapp greet -n Bob -v -c 3"],
-        run=Some(fn(ctx) {
+        run=Some(async fn(ctx) {
           let name = try { ctx.get_string_required("name") } catch { _ => return }
           let verbose = ctx.get_bool("verbose")
           let count = match ctx.get_int("count") { Some(n) => n; None => 1 }
@@ -63,7 +65,7 @@ fn main {
       ),
     ],
   )
-  try { app.run() } catch { err => println(err) }
+  app.run()
 }
 ```
 
@@ -113,10 +115,10 @@ Three types of options, plus positional arguments:
 
 ### Reading Values from Context
 
-Inside a `run` callback, use `Context` methods to read parsed values:
+Inside an async `run` callback, use `Context` methods to read parsed values:
 
 ```moonbit
-run=Some(fn(ctx) {
+run=Some(async fn(ctx) {
   // Bool — returns false if not specified
   let verbose = ctx.get_bool("verbose")
 
@@ -165,7 +167,7 @@ let app = @admiral.cli(
                 "myapp db migrate up --dry-run",
                 "myapp db migrate up --steps 5",
               ],
-              run=Some(fn(ctx) {
+              run=Some(async fn(ctx) {
                 if ctx.get_bool("dry-run") {
                   println("[DRY RUN] Would apply migrations")
                 } else {
@@ -182,7 +184,7 @@ let app = @admiral.cli(
               options=[
                 @admiral.int("steps", short='s', description="Steps to rollback", default=Some(1)),
               ],
-              run=Some(fn(ctx) {
+              run=Some(async fn(ctx) {
                 let steps = match ctx.get_int("steps") { Some(n) => n; None => 1 }
                 println("Rolling back " + steps.to_string() + " migration(s)...")
               }),
@@ -195,7 +197,7 @@ let app = @admiral.cli(
           options=[
             @admiral.string("file", short='f', description="Seed file", default=Some("seeds/default.sql")),
           ],
-          run=Some(fn(ctx) {
+          run=Some(async fn(ctx) {
             let file = match ctx.get_string("file") { Some(f) => f; None => "seeds/default.sql" }
             println("Seeding from: " + file)
           }),
@@ -226,7 +228,7 @@ Seeding from: custom.sql
   positionals=[
     @admiral.positional("files", description="Files to concatenate"),
   ],
-  run=Some(fn(ctx) {
+  run=Some(async fn(ctx) {
     let files = ctx.get_strings("files")
     for file in files {
       println("Reading: " + file)
@@ -245,8 +247,10 @@ Reading: c.txt
 ### Testing with Explicit argv
 
 ```moonbit
-// In tests, pass argv explicitly:
-app.run(argv=Some(["greet", "--name", "alice"]))
+// In async tests, pass argv explicitly:
+async test {
+  app.run(argv=Some(["greet", "--name", "alice"]))
+}
 
 // In production, omit argv to use process args:
 app.run()
@@ -324,7 +328,7 @@ Typical usage — add a `completion` subcommand:
   name="completion",
   description="Generate shell completion script",
   options=[@admiral.string("shell", short='s', description="Shell type (bash, zsh, fish)", required=true)],
-  run=Some(fn(ctx) {
+  run=Some(async fn(ctx) {
     match ctx.get_string("shell") {
       Some("bash") => println(app.render_bash_completion())
       Some("zsh") => println(app.render_zsh_completion())
@@ -361,7 +365,7 @@ myapp completion --shell fish > ~/.config/fish/completions/myapp.fish
 
 | Function | Description |
 |----------|-------------|
-| `command(name, description?, options?, positionals?, examples?, subcommands?, run?)` | Define a command or subcommand |
+| `command(name, description?, options?, positionals?, examples?, subcommands?, run?)` | Define a command or subcommand with an async `run` callback |
 | `cli(name, version?, description?, options?, commands?)` | Create a CLI app |
 
 ### Context Methods
@@ -393,11 +397,11 @@ app.run()                                    // use process args
 app.run(argv=Some(["greet", "--name", "x"])) // explicit args (for testing)
 ```
 
-`--help` and `--version` are automatically handled by argparse.
+`CliApp::run` is async. Call it from `async fn main` or `async test`; no task-group wrapper is required. `--help` and `--version` are automatically handled by argparse. Invoking the app without a command, or a command group without its required subcommand, displays the corresponding help.
 
 ## Targets
 
-Supports all MoonBit targets: native, js, wasm-gc.
+Native is the preferred target. This follows the current support level of the official `moonbitlang/async` runtime.
 
 ## License
 
