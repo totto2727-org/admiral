@@ -26,7 +26,7 @@ test "command with positionals builds correctly" {
 
 ///|
 async test "positionals accessible via context get_strings" {
-  let captured = Ref::new([])
+  let captured = Ref([])
   let app = cli(name="test", version="0.1.0", description="Test", commands=[
     command(
       name="cat",

@@ -1,7 +1,7 @@
 ///|
 async test "cli creates CliApp and run executes async command" {
-  let called = Ref::new(false)
-  let captured_name = Ref::new("")
+  let called = Ref(false)
+  let captured_name = Ref("")
   let app = cli(
     name="test-app",
     version="1.0.0",
@@ -28,7 +28,7 @@ async test "cli creates CliApp and run executes async command" {
 
 ///|
 async test "cli run with bool flag" {
-  let was_verbose = Ref::new(false)
+  let was_verbose = Ref(false)
   let app = cli(name="test-app", version="0.1.0", description="Test", commands=[
     command(
       name="build",
@@ -43,7 +43,7 @@ async test "cli run with bool flag" {
 
 ///|
 async test "cli run with int option" {
-  let port_val = Ref::new(0)
+  let port_val = Ref(0)
   let app = cli(name="test-app", version="0.1.0", description="Test", commands=[
     command(
       name="serve",
@@ -63,7 +63,7 @@ async test "cli run with int option" {
 
 ///|
 async test "cli run with nested async subcommand" {
-  let result = Ref::new("")
+  let result = Ref("")
   let app = cli(name="test-app", version="0.1.0", description="Test", commands=[
     command(name="db", description="Database commands", subcommands=[
       command(
