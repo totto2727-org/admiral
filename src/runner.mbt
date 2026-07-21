@@ -1,22 +1,19 @@
 ///|
-pub fn positional(
-  name : String,
-  description? : String = "",
-  required? : Bool = false,
-) -> PositionalDef {
-  { name, description, required }
-}
-
-///|
 pub fn command(
   name~ : String,
   description? : String = "",
-  options? : Array[OptionDef] = [],
-  positionals? : Array[PositionalDef] = [],
+  options? : Array[&ToStoredOption] = [],
+  positionals? : Array[&ToStoredPosition] = [],
   examples? : Array[String] = [],
   subcommands? : Array[CommandDef] = [],
   run? : (async (Context) -> Unit)? = None,
 ) -> CommandDef {
+  let options = options.map(fn(option) {
+    ToStoredOption::to_stored_option(option)
+  })
+  let positionals = positionals.map(fn(position) {
+    ToStoredPosition::to_stored_position(position)
+  })
   { name, description, options, positionals, examples, subcommands, run }
 }
 
@@ -25,11 +22,14 @@ pub fn cli(
   name~ : String,
   version? : String = "0.0.0",
   description? : String = "",
-  options? : Array[OptionDef] = [],
+  options? : Array[&ToStoredOption] = [],
   commands? : Array[CommandDef] = [],
   load_config? : (() -> Map[String, String] raise ConfigLoadFailure)? = None,
 ) -> CliApp {
-  { name, version, description, root_options: options, commands, load_config }
+  let root_options = options.map(fn(option) {
+    ToStoredOption::to_stored_option(option)
+  })
+  { name, version, description, root_options, commands, load_config }
 }
 
 ///|
@@ -85,7 +85,7 @@ pub async fn CliApp::run(
   let flags : Array[@argparse.FlagArg] = []
   let options : Array[@argparse.OptionArg] = []
   for opt in self.root_options {
-    match opt.type_ {
+    match opt.metadata.type_ {
       BoolOpt => flags.push(build_option_to_flag(opt))
       StringOpt | IntOpt | Int64Opt | UIntOpt | UInt64Opt | DoubleOpt =>
         options.push(build_option_to_option_arg(opt))

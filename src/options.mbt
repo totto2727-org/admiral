@@ -3,6 +3,31 @@
 let no_short : Char = '\u0000'
 
 ///|
+fn[T] option_def(
+  name : String,
+  type_ : OptionType,
+  short : Char,
+  description : String,
+  env : String?,
+  required : Bool,
+  default_value : String?,
+  multiple : Bool,
+) -> OptionDef[T] {
+  {
+    name,
+    metadata: {
+      type_,
+      short,
+      description,
+      env,
+      required,
+      default_value,
+      multiple,
+    },
+  }
+}
+
+///|
 pub fn string(
   name : String,
   short? : Char = '\u0000',
@@ -10,19 +35,28 @@ pub fn string(
   env? : String,
   required? : Bool = false,
   default? : String? = None,
-) -> OptionDef {
-  {
+) -> OptionDef[String] {
+  option_def(
     name,
-    type_: StringOpt,
+    StringOpt,
     short,
     description,
     env,
-    required: match default {
-      Some(_) => false
-      None => required
-    },
-    default_value: default,
-  }
+    default is None && required,
+    default,
+    false,
+  )
+}
+
+///|
+pub fn strings(
+  name : String,
+  short? : Char = '\u0000',
+  description? : String = "",
+  env? : String,
+  required? : Bool = false,
+) -> OptionDef[Array[String]] {
+  option_def(name, StringOpt, short, description, env, required, None, true)
 }
 
 ///|
@@ -31,16 +65,8 @@ pub fn bool(
   short? : Char = '\u0000',
   description? : String = "",
   env? : String,
-) -> OptionDef {
-  {
-    name,
-    type_: BoolOpt,
-    short,
-    description,
-    env,
-    required: false,
-    default_value: None,
-  }
+) -> OptionDef[Bool] {
+  option_def(name, BoolOpt, short, description, env, false, None, false)
 }
 
 ///|
@@ -51,22 +77,28 @@ pub fn int(
   env? : String,
   required? : Bool = false,
   default? : Int? = None,
-) -> OptionDef {
-  {
+) -> OptionDef[Int] {
+  option_def(
     name,
-    type_: IntOpt,
+    IntOpt,
     short,
     description,
     env,
-    required: match default {
-      Some(_) => false
-      None => required
-    },
-    default_value: match default {
-      Some(v) => Some(v.to_string())
-      None => None
-    },
-  }
+    default is None && required,
+    default.map(fn(value) { value.to_string() }),
+    false,
+  )
+}
+
+///|
+pub fn ints(
+  name : String,
+  short? : Char = '\u0000',
+  description? : String = "",
+  env? : String,
+  required? : Bool = false,
+) -> OptionDef[Array[Int]] {
+  option_def(name, IntOpt, short, description, env, required, None, true)
 }
 
 ///|
@@ -77,19 +109,28 @@ pub fn int64(
   env? : String,
   required? : Bool = false,
   default? : Int64? = None,
-) -> OptionDef {
-  {
+) -> OptionDef[Int64] {
+  option_def(
     name,
-    type_: Int64Opt,
+    Int64Opt,
     short,
     description,
     env,
-    required: match default {
-      Some(_) => false
-      None => required
-    },
-    default_value: default.map(fn(value) { value.to_string() }),
-  }
+    default is None && required,
+    default.map(fn(value) { value.to_string() }),
+    false,
+  )
+}
+
+///|
+pub fn int64s(
+  name : String,
+  short? : Char = '\u0000',
+  description? : String = "",
+  env? : String,
+  required? : Bool = false,
+) -> OptionDef[Array[Int64]] {
+  option_def(name, Int64Opt, short, description, env, required, None, true)
 }
 
 ///|
@@ -100,19 +141,28 @@ pub fn uint(
   env? : String,
   required? : Bool = false,
   default? : UInt? = None,
-) -> OptionDef {
-  {
+) -> OptionDef[UInt] {
+  option_def(
     name,
-    type_: UIntOpt,
+    UIntOpt,
     short,
     description,
     env,
-    required: match default {
-      Some(_) => false
-      None => required
-    },
-    default_value: default.map(fn(value) { value.to_string() }),
-  }
+    default is None && required,
+    default.map(fn(value) { value.to_string() }),
+    false,
+  )
+}
+
+///|
+pub fn uints(
+  name : String,
+  short? : Char = '\u0000',
+  description? : String = "",
+  env? : String,
+  required? : Bool = false,
+) -> OptionDef[Array[UInt]] {
+  option_def(name, UIntOpt, short, description, env, required, None, true)
 }
 
 ///|
@@ -123,19 +173,28 @@ pub fn uint64(
   env? : String,
   required? : Bool = false,
   default? : UInt64? = None,
-) -> OptionDef {
-  {
+) -> OptionDef[UInt64] {
+  option_def(
     name,
-    type_: UInt64Opt,
+    UInt64Opt,
     short,
     description,
     env,
-    required: match default {
-      Some(_) => false
-      None => required
-    },
-    default_value: default.map(fn(value) { value.to_string() }),
-  }
+    default is None && required,
+    default.map(fn(value) { value.to_string() }),
+    false,
+  )
+}
+
+///|
+pub fn uint64s(
+  name : String,
+  short? : Char = '\u0000',
+  description? : String = "",
+  env? : String,
+  required? : Bool = false,
+) -> OptionDef[Array[UInt64]] {
+  option_def(name, UInt64Opt, short, description, env, required, None, true)
 }
 
 ///|
@@ -146,17 +205,26 @@ pub fn double(
   env? : String,
   required? : Bool = false,
   default? : Double? = None,
-) -> OptionDef {
-  {
+) -> OptionDef[Double] {
+  option_def(
     name,
-    type_: DoubleOpt,
+    DoubleOpt,
     short,
     description,
     env,
-    required: match default {
-      Some(_) => false
-      None => required
-    },
-    default_value: default.map(fn(value) { value.to_string() }),
-  }
+    default is None && required,
+    default.map(fn(value) { value.to_string() }),
+    false,
+  )
+}
+
+///|
+pub fn doubles(
+  name : String,
+  short? : Char = '\u0000',
+  description? : String = "",
+  env? : String,
+  required? : Bool = false,
+) -> OptionDef[Array[Double]] {
+  option_def(name, DoubleOpt, short, description, env, required, None, true)
 }

@@ -39,6 +39,15 @@ import {
 
 ```moonbit
 async fn main {
+  let name = @admiral.string(
+    "name",
+    short='n',
+    description="Name to greet",
+    env="ADMIRAL_NAME",
+    required=true,
+  )
+  let verbose = @admiral.bool("verbose", short='v', description="Verbose output")
+  let count = @admiral.int("count", short='c', description="Repeat count", default=Some(1))
   let app = @admiral.cli(
     name="myapp",
     version="1.0.0",
@@ -47,27 +56,17 @@ async fn main {
       @admiral.command(
         name="greet",
         description="Greet someone",
-        options=[
-          @admiral.string(
-            "name",
-            short='n',
-            description="Name to greet",
-            env="ADMIRAL_NAME",
-            required=true,
-          ),
-          @admiral.bool("verbose", short='v', description="Verbose output"),
-          @admiral.int("count", short='c', description="Repeat count", default=Some(1)),
-        ],
+        options=[name, verbose, count],
         examples=["myapp greet --name Alice", "myapp greet -n Bob -v -c 3"],
         run=Some(async fn(ctx) {
-          let name = try { ctx.get_string_required("name") } catch { _ => return }
-          let verbose = ctx.get_bool("verbose")
-          let count = match ctx.get_int("count") { Some(n) => n; None => 1 }
-          for i = 0; i < count; i = i + 1 {
-            if verbose {
-              println("Hello, " + name + "! (" + (i + 1).to_string() + ")")
+          let name_value = try { ctx.get_string_required(name) } catch { _ => return }
+          let is_verbose = ctx.get_bool(verbose)
+          let count_value = match ctx.get_int(count) { Some(n) => n; None => 1 }
+          for i = 0; i < count_value; i = i + 1 {
+            if is_verbose {
+              println("Hello, " + name_value + "! (" + (i + 1).to_string() + ")")
             } else {
-              println("Hello, " + name + "!")
+              println("Hello, " + name_value + "!")
             }
           }
         }),
@@ -104,7 +103,7 @@ Options:
 
 ### Defining Options
 
-Three types of options, plus positional arguments:
+Options and positions use the same value types and `Context` getters:
 
 ```moonbit
 // String option: --name value or -n value
@@ -116,8 +115,11 @@ Three types of options, plus positional arguments:
 // Int option: --port 8080 or -p 8080
 @admiral.int("port", short='p', description="Port number", env="MYAPP_PORT", default=Some(3000))
 
-// Positional argument
-@admiral.positional("file", description="Input file", required=true)
+// Scalar position: file
+@admiral.position_string("file", description="Input file", required=true)
+
+// Variadic position: file...
+@admiral.position_strings("files", description="Input files")
 ```
 
 `short` and `env` are optional. Omit `short` to only allow the long form
@@ -162,9 +164,8 @@ The default process map comes from
 The generated schema contains only the configured environment variable name;
 it never resolves or embeds the variable's runtime value.
 
-`OptionDef` is public, so code that constructs it directly with a struct literal
-must add `env: None` (or `env: Some("MYAPP_NAME")`). Calls through the `string`,
-`bool`, and `int` helpers remain source-compatible because `env` is optional.
+Each helper returns a typed, read-only definition such as `OptionDef[String]`, `OptionDef[Bool]`, or `OptionDef[Int]`.
+Pass the same definition to `command` or `cli` and to the matching `Context` getter; this makes the option name a single source of truth and causes mismatched getters to fail at compile time.
 
 ### Configuration
 
@@ -209,24 +210,30 @@ Calls through `cli` remain source-compatible because `load_config` is optional.
 Inside an async `run` callback, use `Context` methods to read parsed values:
 
 ```moonbit
+let verbose = @admiral.bool("verbose")
+let name = @admiral.string("name", required=true)
+let port = @admiral.int("port", required=true)
+let input = @admiral.position_int("input", required=true)
+
+// Register definitions with command(options=[verbose, name, port], positionals=[input]).
 run=Some(async fn(ctx) {
   // Bool — returns false if not specified
-  let verbose = ctx.get_bool("verbose")
+  let is_verbose = ctx.get_bool(verbose)
 
   // String — returns None if not specified
-  let name = ctx.get_string("name")       // String?
+  let name_value = ctx.get_string(name)       // String?
 
   // String (required) — raises if missing
-  let name = try { ctx.get_string_required("name") } catch { _ => return }
+  let name_value = try { ctx.get_string_required(name) } catch { _ => return }
 
   // Int — parses string value to Int, returns None if missing or invalid
-  let port = ctx.get_int("port")           // Int?
+  let port_value = ctx.get_int(port)           // Int?
 
   // Int (required) — raises if missing or not a valid integer
-  let port = try { ctx.get_int_required("port") } catch { _ => return }
+  let port_value = try { ctx.get_int_required(port) } catch { _ => return }
 
-  // Multiple values (e.g., positional args that accept multiple values)
-  let files = ctx.get_strings("files")     // Array[String]
+  // The same getter accepts PositionDef[Int]
+  let input_value = try { ctx.get_int_required(input) } catch { _ => return }
 })
 ```
 
@@ -235,6 +242,11 @@ run=Some(async fn(ctx) {
 Commands can nest arbitrarily deep:
 
 ```moonbit
+let dry_run = @admiral.bool("dry-run", description="Preview without applying")
+let up_steps = @admiral.int("steps", short='s', description="Number of steps")
+let down_steps = @admiral.int("steps", short='s', description="Steps to rollback", default=Some(1))
+let seed_file = @admiral.string("file", short='f', description="Seed file", default=Some("seeds/default.sql"))
+
 let app = @admiral.cli(
   name="myapp",
   commands=[
@@ -249,20 +261,17 @@ let app = @admiral.cli(
             @admiral.command(
               name="up",
               description="Apply pending migrations",
-              options=[
-                @admiral.bool("dry-run", description="Preview without applying"),
-                @admiral.int("steps", short='s', description="Number of steps"),
-              ],
+              options=[dry_run, up_steps],
               examples=[
                 "myapp db migrate up",
                 "myapp db migrate up --dry-run",
                 "myapp db migrate up --steps 5",
               ],
               run=Some(async fn(ctx) {
-                if ctx.get_bool("dry-run") {
+                if ctx.get_bool(dry_run) {
                   println("[DRY RUN] Would apply migrations")
                 } else {
-                  match ctx.get_int("steps") {
+                  match ctx.get_int(up_steps) {
                     Some(n) => println("Applying " + n.to_string() + " migrations...")
                     None => println("Applying all pending migrations...")
                   }
@@ -272,11 +281,9 @@ let app = @admiral.cli(
             @admiral.command(
               name="down",
               description="Rollback migrations",
-              options=[
-                @admiral.int("steps", short='s', description="Steps to rollback", default=Some(1)),
-              ],
+              options=[down_steps],
               run=Some(async fn(ctx) {
-                let steps = match ctx.get_int("steps") { Some(n) => n; None => 1 }
+                let steps = match ctx.get_int(down_steps) { Some(n) => n; None => 1 }
                 println("Rolling back " + steps.to_string() + " migration(s)...")
               }),
             ),
@@ -285,11 +292,9 @@ let app = @admiral.cli(
         @admiral.command(
           name="seed",
           description="Seed the database",
-          options=[
-            @admiral.string("file", short='f', description="Seed file", default=Some("seeds/default.sql")),
-          ],
+          options=[seed_file],
           run=Some(async fn(ctx) {
-            let file = match ctx.get_string("file") { Some(f) => f; None => "seeds/default.sql" }
+            let file = match ctx.get_string(seed_file) { Some(f) => f; None => "seeds/default.sql" }
             println("Seeding from: " + file)
           }),
         ),
@@ -313,15 +318,15 @@ Seeding from: custom.sql
 ### Positional Arguments
 
 ```moonbit
+let files = @admiral.position_strings("files", description="Files to concatenate")
+
 @admiral.command(
   name="cat",
   description="Concatenate files",
-  positionals=[
-    @admiral.positional("files", description="Files to concatenate"),
-  ],
+  positionals=[files],
   run=Some(async fn(ctx) {
-    let files = ctx.get_strings("files")
-    for file in files {
+    let file_values = ctx.get_strings(files).unwrap_or([])
+    for file in file_values {
       println("Reading: " + file)
     }
   }),
@@ -415,12 +420,19 @@ println(app.render_fish_completion())
 Typical usage — add a `completion` subcommand:
 
 ```moonbit
+let shell = @admiral.string(
+  "shell",
+  short='s',
+  description="Shell type (bash, zsh, fish)",
+  required=true,
+)
+
 @admiral.command(
   name="completion",
   description="Generate shell completion script",
-  options=[@admiral.string("shell", short='s', description="Shell type (bash, zsh, fish)", required=true)],
+  options=[shell],
   run=Some(async fn(ctx) {
-    match ctx.get_string("shell") {
+    match ctx.get_string(shell) {
       Some("bash") => println(app.render_bash_completion())
       Some("zsh") => println(app.render_zsh_completion())
       Some("fish") => println(app.render_fish_completion())
@@ -448,13 +460,31 @@ myapp completion --shell fish > ~/.config/fish/completions/myapp.fish
 | Function | Description |
 |----------|-------------|
 | `string(name, short?, description?, env?, required?, default?)` | String option (`--name value`) |
+| `strings(name, short?, description?, env?, required?)` | Repeated string option |
 | `bool(name, short?, description?, env?)` | Boolean flag (`--verbose`) |
 | `int(name, short?, description?, env?, required?, default?)` | Integer option (`--port 8080`) |
+| `ints(name, short?, description?, env?, required?)` | Repeated integer option |
 | `int64(name, short?, description?, env?, required?, default?)` | 64-bit signed integer option |
+| `int64s(name, short?, description?, env?, required?)` | Repeated 64-bit signed integer option |
 | `uint(name, short?, description?, env?, required?, default?)` | Unsigned integer option |
+| `uints(name, short?, description?, env?, required?)` | Repeated unsigned integer option |
 | `uint64(name, short?, description?, env?, required?, default?)` | 64-bit unsigned integer option |
+| `uint64s(name, short?, description?, env?, required?)` | Repeated 64-bit unsigned integer option |
 | `double(name, short?, description?, env?, required?, default?)` | Double-precision floating-point option |
-| `positional(name, description?, required?)` | Positional argument |
+| `doubles(name, short?, description?, env?, required?)` | Repeated double-precision floating-point option |
+
+### Position Helpers
+
+| Function | Result type |
+|----------|-------------|
+| `position_string(name, description?, required?)` | `PositionDef[String]` |
+| `position_strings(name, description?, required?)` | `PositionDef[Array[String]]` |
+| `position_int(name, description?, required?)` | `PositionDef[Int]` |
+| `position_ints(name, description?, required?)` | `PositionDef[Array[Int]]` |
+| `position_int64` / `position_int64s` | `PositionDef[Int64]` / `PositionDef[Array[Int64]]` |
+| `position_uint` / `position_uints` | `PositionDef[UInt]` / `PositionDef[Array[UInt]]` |
+| `position_uint64` / `position_uint64s` | `PositionDef[UInt64]` / `PositionDef[Array[UInt64]]` |
+| `position_double` / `position_doubles` | `PositionDef[Double]` / `PositionDef[Array[Double]]` |
 
 ### Command Definition
 
@@ -467,20 +497,19 @@ myapp completion --shell fish > ~/.config/fish/completions/myapp.fish
 
 | Method | Return | Description |
 |--------|--------|-------------|
-| `get_bool(name)` | `Bool` | Flag value (default: `false`) |
-| `get_string(name)` | `String?` | First string value |
-| `get_string_required(name)` | `String raise` | First value, raises if missing |
-| `get_int(name)` | `Int?` | Parsed integer value |
-| `get_int_required(name)` | `Int raise` | Parsed integer, raises if missing/invalid |
-| `get_int64(name)` | `Int64?` | Parsed 64-bit signed integer value |
-| `get_int64_required(name)` | `Int64 raise` | Parsed 64-bit signed integer, raises if missing/invalid |
-| `get_uint(name)` | `UInt?` | Parsed unsigned integer value |
-| `get_uint_required(name)` | `UInt raise` | Parsed unsigned integer, raises if missing/invalid |
-| `get_uint64(name)` | `UInt64?` | Parsed 64-bit unsigned integer value |
-| `get_uint64_required(name)` | `UInt64 raise` | Parsed 64-bit unsigned integer, raises if missing/invalid |
-| `get_double(name)` | `Double?` | Parsed double-precision floating-point value |
-| `get_double_required(name)` | `Double raise` | Parsed double-precision floating-point value, raises if missing/invalid |
-| `get_strings(name)` | `Array[String]` | All values for an option |
+| `get_bool(OptionDef[Bool])` | `Bool` | Flag value (default: `false`) |
+| `get_string(ArgDef[String, M])` | `String?` | First string value from an option or position |
+| `get_string_required(ArgDef[String, M])` | `String raise` | Required string value |
+| `get_int(ArgDef[Int, M])` | `Int?` | Parsed integer value from an option or position |
+| `get_int_required(ArgDef[Int, M])` | `Int raise` | Required parsed integer value |
+| `get_int64` / `get_int64_required` | `Int64?` / `Int64 raise` | 64-bit signed integer value |
+| `get_uint` / `get_uint_required` | `UInt?` / `UInt raise` | Unsigned integer value |
+| `get_uint64` / `get_uint64_required` | `UInt64?` / `UInt64 raise` | 64-bit unsigned integer value |
+| `get_double` / `get_double_required` | `Double?` / `Double raise` | Double-precision floating-point value |
+| `get_strings(ArgDef[Array[String], M])` | `Array[String]?` | Repeated string values |
+| `get_ints(ArgDef[Array[Int], M])` | `Array[Int]?` | Repeated parsed integer values |
+| `get_int64s` / `get_uints` / `get_uint64s` / `get_doubles` | corresponding `Array[T]?` | Repeated parsed numeric values |
+| plural getter with `_required` suffix | corresponding `Array[T] raise` | Required repeated values |
 | `get_subcommand()` | `(String, Context)?` | Selected subcommand name and context |
 
 ### Schema & Completion

@@ -2,6 +2,7 @@
 async test "cli creates CliApp and run executes async command" {
   let called = Ref(false)
   let captured_name = Ref("")
+  let name = string("name", short='n', description="Name", required=true)
   let app = cli(
     name="test-app",
     version="1.0.0",
@@ -10,11 +11,11 @@ async test "cli creates CliApp and run executes async command" {
       command(
         name="greet",
         description="Greet someone",
-        options=[string("name", short='n', description="Name", required=true)],
+        options=[name],
         run=Some(async fn(ctx) {
           @async.sleep(0)
           called.val = true
-          captured_name.val = ctx.get_string_required("name") catch {
+          captured_name.val = ctx.get_string_required(name) catch {
             _ => "error"
           }
         }),
@@ -29,12 +30,13 @@ async test "cli creates CliApp and run executes async command" {
 ///|
 async test "explicit argv preserves configured defaults" {
   let captured = Ref("")
+  let name = string("name", default=Some("fallback"))
   let app = cli(name="test-app", commands=[
     command(
       name="greet",
-      options=[string("name", default=Some("fallback"))],
+      options=[name],
       run=Some(fn(ctx) {
-        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+        captured.val = ctx.get_string_required(name) catch { _ => "error" }
       }),
     ),
   ])
@@ -45,16 +47,15 @@ async test "explicit argv preserves configured defaults" {
 ///|
 async test "env supplies string int and bool options" {
   let captured = Ref("")
+  let name = string("name", env="ADMIRAL_TEST_NAME")
+  let port = int("port", env="ADMIRAL_TEST_PORT")
+  let verbose = bool("verbose", env="ADMIRAL_TEST_VERBOSE")
   let app = cli(name="test-app", commands=[
     command(
       name="serve",
-      options=[
-        string("name", env="ADMIRAL_TEST_NAME"),
-        int("port", env="ADMIRAL_TEST_PORT"),
-        bool("verbose", env="ADMIRAL_TEST_VERBOSE"),
-      ],
+      options=[name, port, verbose],
       run=Some(fn(ctx) {
-        captured.val = "\{ctx.get_string("name").unwrap_or("")}:\{ctx.get_int("port").unwrap_or(0)}:\{ctx.get_bool("verbose")}"
+        captured.val = "\{ctx.get_string(name).unwrap_or("")}:\{ctx.get_int(port).unwrap_or(0)}:\{ctx.get_bool(verbose)}"
       }),
     ),
   ])
@@ -69,33 +70,37 @@ async test "env supplies string int and bool options" {
 ///|
 async test "argv supplies all supported numeric option types" {
   let captured = Ref("")
+  let int_option = int("int")
+  let int64_option = int64("int64")
+  let uint_option = uint("uint")
+  let uint64_option = uint64("uint64")
+  let double_option = double("double")
   let app = cli(name="test-app", commands=[
     command(
       name="numbers",
       options=[
-        int("int"),
-        int64("int64"),
-        uint("uint"),
-        uint64("uint64"),
-        double("double"),
+        int_option, int64_option, uint_option, uint64_option, double_option,
       ],
       run=Some(fn(ctx) {
         captured.val = [
-          ctx.get_int("int").map(fn(value) { value.to_string() }).unwrap_or(""),
           ctx
-          .get_int64("int64")
+          .get_int(int_option)
           .map(fn(value) { value.to_string() })
           .unwrap_or(""),
           ctx
-          .get_uint("uint")
+          .get_int64(int64_option)
           .map(fn(value) { value.to_string() })
           .unwrap_or(""),
           ctx
-          .get_uint64("uint64")
+          .get_uint(uint_option)
           .map(fn(value) { value.to_string() })
           .unwrap_or(""),
           ctx
-          .get_double("double")
+          .get_uint64(uint64_option)
+          .map(fn(value) { value.to_string() })
+          .unwrap_or(""),
+          ctx
+          .get_double(double_option)
           .map(fn(value) { value.to_string() })
           .unwrap_or(""),
         ].join(":")
@@ -117,18 +122,17 @@ async test "argv supplies all supported numeric option types" {
 ///|
 async test "argv overrides env and configured default" {
   let captured = Ref("")
+  let name = string(
+    "name",
+    env="ADMIRAL_TEST_PRECEDENCE",
+    default=Some("default-name"),
+  )
   let app = cli(name="test-app", commands=[
     command(
       name="greet",
-      options=[
-        string(
-          "name",
-          env="ADMIRAL_TEST_PRECEDENCE",
-          default=Some("default-name"),
-        ),
-      ],
+      options=[name],
       run=Some(fn(ctx) {
-        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+        captured.val = ctx.get_string_required(name) catch { _ => "error" }
       }),
     ),
   ])
@@ -141,18 +145,17 @@ async test "argv overrides env and configured default" {
 ///|
 async test "env overrides configured default" {
   let captured = Ref("")
+  let name = string(
+    "name",
+    env="ADMIRAL_TEST_ENV_DEFAULT",
+    default=Some("default-name"),
+  )
   let app = cli(name="test-app", commands=[
     command(
       name="greet",
-      options=[
-        string(
-          "name",
-          env="ADMIRAL_TEST_ENV_DEFAULT",
-          default=Some("default-name"),
-        ),
-      ],
+      options=[name],
       run=Some(fn(ctx) {
-        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+        captured.val = ctx.get_string_required(name) catch { _ => "error" }
       }),
     ),
   ])
@@ -163,18 +166,17 @@ async test "env overrides configured default" {
 ///|
 async test "configured default applies when argv and env omit option" {
   let captured = Ref("")
+  let name = string(
+    "name",
+    env="ADMIRAL_TEST_MISSING_DEFAULT",
+    default=Some("default-name"),
+  )
   let app = cli(name="test-app", commands=[
     command(
       name="greet",
-      options=[
-        string(
-          "name",
-          env="ADMIRAL_TEST_MISSING_DEFAULT",
-          default=Some("default-name"),
-        ),
-      ],
+      options=[name],
       run=Some(fn(ctx) {
-        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+        captured.val = ctx.get_string_required(name) catch { _ => "error" }
       }),
     ),
   ])
@@ -185,12 +187,13 @@ async test "configured default applies when argv and env omit option" {
 ///|
 async test "env satisfies a required option" {
   let captured = Ref("")
+  let name = string("name", env="ADMIRAL_TEST_REQUIRED", required=true)
   let app = cli(name="test-app", commands=[
     command(
       name="greet",
-      options=[string("name", env="ADMIRAL_TEST_REQUIRED", required=true)],
+      options=[name],
       run=Some(fn(ctx) {
-        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+        captured.val = ctx.get_string_required(name) catch { _ => "error" }
       }),
     ),
   ])
@@ -251,18 +254,17 @@ async test "invalid bool env value propagates parse failure" {
 ///|
 async test "explicit empty env isolates parsing from ambient environment" {
   let captured = Ref("")
+  let name = string(
+    "name",
+    env="ADMIRAL_TEST_ISOLATED_NAME",
+    default=Some("isolated-default"),
+  )
   let app = cli(name="test-app", commands=[
     command(
       name="greet",
-      options=[
-        string(
-          "name",
-          env="ADMIRAL_TEST_ISOLATED_NAME",
-          default=Some("isolated-default"),
-        ),
-      ],
+      options=[name],
       run=Some(fn(ctx) {
-        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+        captured.val = ctx.get_string_required(name) catch { _ => "error" }
       }),
     ),
   ])
@@ -273,13 +275,14 @@ async test "explicit empty env isolates parsing from ambient environment" {
 ///|
 async test "env reaches nested command options" {
   let captured = Ref("")
+  let name = string("name", env="ADMIRAL_TEST_NESTED")
   let app = cli(name="test-app", commands=[
     command(name="admin", subcommands=[
       command(
         name="greet",
-        options=[string("name", env="ADMIRAL_TEST_NESTED")],
+        options=[name],
         run=Some(fn(ctx) {
-          captured.val = ctx.get_string_required("name") catch { _ => "error" }
+          captured.val = ctx.get_string_required(name) catch { _ => "error" }
         }),
       ),
     ]),
@@ -294,6 +297,9 @@ async test "env reaches nested command options" {
 async test "config supplies scalar options through argparse env" {
   let loaded = Ref(0)
   let captured = Ref("")
+  let name = string("name", env="ADMIRAL_CONFIG_NAME", required=true)
+  let port = int("port", env="ADMIRAL_CONFIG_PORT", default=Some(3000))
+  let verbose = bool("verbose", env="ADMIRAL_CONFIG_VERBOSE")
   let app = cli(
     name="test-app",
     load_config=Some(fn() {
@@ -307,13 +313,9 @@ async test "config supplies scalar options through argparse env" {
     commands=[
       command(
         name="serve",
-        options=[
-          string("name", env="ADMIRAL_CONFIG_NAME", required=true),
-          int("port", env="ADMIRAL_CONFIG_PORT", default=Some(3000)),
-          bool("verbose", env="ADMIRAL_CONFIG_VERBOSE"),
-        ],
+        options=[name, port, verbose],
         run=Some(fn(ctx) {
-          captured.val = "\{ctx.get_string("name").unwrap_or("")}:\{ctx.get_int("port").unwrap_or(0)}:\{ctx.get_bool("verbose")}"
+          captured.val = "\{ctx.get_string(name).unwrap_or("")}:\{ctx.get_int(port).unwrap_or(0)}:\{ctx.get_bool(verbose)}"
         }),
       ),
     ],
@@ -326,6 +328,22 @@ async test "config supplies scalar options through argparse env" {
 ///|
 async test "config precedence is below argv and real env and above defaults" {
   let captured = Ref("")
+  let argv_value = string(
+    "argv-value",
+    env="ADMIRAL_CONFIG_ARGV",
+    default=Some("default-argv"),
+  )
+  let env_value = string(
+    "env-value",
+    env="ADMIRAL_CONFIG_ENV",
+    default=Some("default-env"),
+  )
+  let config_value = string(
+    "config-value",
+    env="ADMIRAL_CONFIG_ONLY",
+    default=Some("default-config"),
+  )
+  let default_value = string("default-value", default=Some("default-only"))
   let app = cli(
     name="test-app",
     load_config=Some(fn() {
@@ -338,30 +356,13 @@ async test "config precedence is below argv and real env and above defaults" {
     commands=[
       command(
         name="show",
-        options=[
-          string(
-            "argv-value",
-            env="ADMIRAL_CONFIG_ARGV",
-            default=Some("default-argv"),
-          ),
-          string(
-            "env-value",
-            env="ADMIRAL_CONFIG_ENV",
-            default=Some("default-env"),
-          ),
-          string(
-            "config-value",
-            env="ADMIRAL_CONFIG_ONLY",
-            default=Some("default-config"),
-          ),
-          string("default-value", default=Some("default-only")),
-        ],
+        options=[argv_value, env_value, config_value, default_value],
         run=Some(fn(ctx) {
           captured.val = [
-            ctx.get_string("argv-value").unwrap_or(""),
-            ctx.get_string("env-value").unwrap_or(""),
-            ctx.get_string("config-value").unwrap_or(""),
-            ctx.get_string("default-value").unwrap_or(""),
+            ctx.get_string(argv_value).unwrap_or(""),
+            ctx.get_string(env_value).unwrap_or(""),
+            ctx.get_string(config_value).unwrap_or(""),
+            ctx.get_string(default_value).unwrap_or(""),
           ].join(":")
         }),
       ),
@@ -377,14 +378,15 @@ async test "config precedence is below argv and real env and above defaults" {
 ///|
 async test "config satisfies required option through argparse" {
   let captured = Ref("")
+  let name = string("name", env="ADMIRAL_CONFIG_REQUIRED", required=true)
   let app = cli(
     name="test-app",
     load_config=Some(fn() { { "ADMIRAL_CONFIG_REQUIRED": "config-required" } }),
     commands=[
       command(
         name="run",
-        options=[string("name", env="ADMIRAL_CONFIG_REQUIRED", required=true)],
-        run=Some(fn(ctx) { captured.val = ctx.get_string("name").unwrap_or("") }),
+        options=[name],
+        run=Some(fn(ctx) { captured.val = ctx.get_string(name).unwrap_or("") }),
       ),
     ],
   )
@@ -418,14 +420,15 @@ async test "empty config keeps argparse required validation" {
 ///|
 async test "config env value remains a single string" {
   let captured : Ref[Array[String]] = Ref([])
+  let tags = strings("tags", env="ADMIRAL_CONFIG_TAGS")
   let app = cli(
     name="test-app",
     load_config=Some(fn() { { "ADMIRAL_CONFIG_TAGS": "a,b" } }),
     commands=[
       command(
         name="show",
-        options=[string("tags", env="ADMIRAL_CONFIG_TAGS")],
-        run=Some(fn(ctx) { captured.val = ctx.get_strings("tags") }),
+        options=[tags],
+        run=Some(fn(ctx) { captured.val = ctx.get_strings(tags).unwrap_or([]) }),
       ),
     ],
   )
@@ -458,12 +461,13 @@ async test "config load failure propagates before command execution" {
 ///|
 async test "cli run with bool flag" {
   let was_verbose = Ref(false)
+  let verbose = bool("verbose", short='v', description="Verbose")
   let app = cli(name="test-app", version="0.1.0", description="Test", commands=[
     command(
       name="build",
       description="Build project",
-      options=[bool("verbose", short='v', description="Verbose")],
-      run=Some(fn(ctx) { was_verbose.val = ctx.get_bool("verbose") }),
+      options=[verbose],
+      run=Some(fn(ctx) { was_verbose.val = ctx.get_bool(verbose) }),
     ),
   ])
   app.run(argv=Some(["build", "--verbose"]))
@@ -473,13 +477,14 @@ async test "cli run with bool flag" {
 ///|
 async test "cli run with int option" {
   let port_val = Ref(0)
+  let port = int("port", short='p', description="Port", default=Some(3000))
   let app = cli(name="test-app", version="0.1.0", description="Test", commands=[
     command(
       name="serve",
       description="Start server",
-      options=[int("port", short='p', description="Port", default=Some(3000))],
+      options=[port],
       run=Some(fn(ctx) {
-        port_val.val = match ctx.get_int("port") {
+        port_val.val = match ctx.get_int(port) {
           Some(p) => p
           None => 0
         }
@@ -493,14 +498,15 @@ async test "cli run with int option" {
 ///|
 async test "cli run with nested async subcommand" {
   let result = Ref("")
+  let dry_run = bool("dry-run", description="Dry run")
   let app = cli(name="test-app", version="0.1.0", description="Test", commands=[
     command(name="db", description="Database commands", subcommands=[
       command(
         name="migrate",
         description="Run migrations",
-        options=[bool("dry-run", description="Dry run")],
+        options=[dry_run],
         run=Some(fn(ctx) {
-          result.val = if ctx.get_bool("dry-run") { "dry" } else { "real" }
+          result.val = if ctx.get_bool(dry_run) { "dry" } else { "real" }
         }),
       ),
     ]),

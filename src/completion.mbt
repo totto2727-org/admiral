@@ -1,10 +1,10 @@
 ///|
-fn collect_option_words(options : Array[OptionDef]) -> String {
+fn collect_option_words(options : Array[StoredOption]) -> String {
   let words : Array[String] = []
   for opt in options {
     words.push("--" + opt.name)
     if has_short(opt) {
-      words.push("-" + opt.short.to_string())
+      words.push("-" + opt.metadata.short.to_string())
     }
   }
   words.join(" ")
@@ -142,10 +142,10 @@ fn render_zsh_command(
   if cmd.options.length() > 0 {
     sb.write_string("  _arguments \\\n")
     for i, opt in cmd.options {
-      let desc = escape_single_quote(opt.description)
+      let desc = escape_single_quote(opt.metadata.description)
       let flag = if has_short(opt) {
         "'-" +
-        opt.short.to_string() +
+        opt.metadata.short.to_string() +
         "[" +
         desc +
         "]' '--" +
@@ -196,7 +196,7 @@ fn render_fish_options(
   sb : StringBuilder,
   app_name : String,
   condition : String,
-  options : Array[OptionDef],
+  options : Array[StoredOption],
 ) -> Unit {
   for opt in options {
     let mut line = "complete -c " +
@@ -206,12 +206,15 @@ fn render_fish_options(
       " -l " +
       opt.name
     if has_short(opt) {
-      line = line + " -s " + opt.short.to_string()
+      line = line + " -s " + opt.metadata.short.to_string()
     }
-    if opt.description.length() > 0 {
-      line = line + " -d '" + escape_single_quote(opt.description) + "'"
+    if opt.metadata.description.length() > 0 {
+      line = line +
+        " -d '" +
+        escape_single_quote(opt.metadata.description) +
+        "'"
     }
-    if opt.type_ != BoolOpt {
+    if opt.metadata.type_ != BoolOpt {
       line = line + " -r"
     }
     sb.write_string(line + "\n")

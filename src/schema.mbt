@@ -12,22 +12,24 @@ fn option_type_to_string(t : OptionType) -> String {
 }
 
 ///|
-fn option_def_to_json(opt : OptionDef) -> Json {
+fn option_def_to_json(opt : StoredOption) -> Json {
+  let metadata = opt.metadata
   let m : Map[String, Json] = Map([])
-  m["type"] = option_type_to_string(opt.type_).to_json()
-  m["description"] = opt.description.to_json()
-  m["required"] = opt.required.to_json()
-  if opt.type_ == BoolOpt {
+  m["type"] = option_type_to_string(metadata.type_).to_json()
+  m["description"] = metadata.description.to_json()
+  m["required"] = metadata.required.to_json()
+  m["multiple"] = metadata.multiple.to_json()
+  if metadata.type_ == BoolOpt {
     m["style"] = "flag".to_json()
   }
-  if opt.short != no_short {
-    m["short"] = opt.short.to_string().to_json()
+  if metadata.short != no_short {
+    m["short"] = metadata.short.to_string().to_json()
   }
-  match opt.env {
+  match metadata.env {
     Some(name) => m["env"] = name.to_json()
     None => ()
   }
-  match opt.default_value {
+  match metadata.default_value {
     Some(v) => m["default"] = v.to_json()
     None => ()
   }
@@ -35,18 +37,21 @@ fn option_def_to_json(opt : OptionDef) -> Json {
 }
 
 ///|
-fn positional_def_to_json(pos : PositionalDef) -> Json {
+fn position_def_to_json(position : StoredPosition) -> Json {
+  let metadata = position.metadata
   let m : Map[String, Json] = Map([])
-  m["description"] = pos.description.to_json()
-  m["required"] = pos.required.to_json()
+  m["type"] = option_type_to_string(metadata.type_).to_json()
+  m["description"] = metadata.description.to_json()
+  m["required"] = metadata.required.to_json()
+  m["multiple"] = metadata.multiple.to_json()
   Json::object(m)
 }
 
 ///|
-fn generate_example(cmd_path : String, options : Array[OptionDef]) -> String {
+fn generate_example(cmd_path : String, options : Array[StoredOption]) -> String {
   let parts : Array[String] = [cmd_path]
   for opt in options {
-    if opt.required {
+    if opt.metadata.required {
       parts.push("--" + opt.name + " <" + opt.name + ">")
     }
   }
@@ -67,7 +72,7 @@ fn command_def_to_json(cmd : CommandDef, cmd_path : String) -> Json {
   if cmd.positionals.length() > 0 {
     let poss : Map[String, Json] = Map([])
     for pos in cmd.positionals {
-      poss[pos.name] = positional_def_to_json(pos)
+      poss[pos.name] = position_def_to_json(pos)
     }
     m["positionals"] = Json::object(poss)
   }

@@ -1,17 +1,14 @@
 ///|
 test "OptionDef holds string option metadata" {
-  let opt : @admiral.OptionDef = {
-    name: "output",
-    type_: @admiral.StringOpt,
-    short: 'o',
-    description: "Output path",
-    env: None,
-    required: true,
-    default_value: None,
-  }
+  let opt : @admiral.OptionDef[String] = @admiral.string(
+    "output",
+    short='o',
+    description="Output path",
+    required=true,
+  )
   inspect(opt.name, content="output")
-  inspect(opt.type_, content="StringOpt")
-  inspect(opt.required, content="true")
+  inspect(opt.metadata.type_, content="StringOpt")
+  inspect(opt.metadata.required, content="true")
 }
 
 ///|

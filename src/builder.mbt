@@ -1,71 +1,87 @@
 ///|
-fn has_short(opt : OptionDef) -> Bool {
-  opt.short != no_short
+fn has_short(opt : StoredOption) -> Bool {
+  opt.metadata.short != no_short
 }
 
 ///|
-fn build_option_to_flag(opt : OptionDef) -> @argparse.FlagArg {
-  let env = opt.env.map(fn(value) { value[:] })
+fn build_option_to_flag(opt : StoredOption) -> @argparse.FlagArg {
+  let metadata = opt.metadata
+  let env = metadata.env.map(fn(value) { value[:] })
   if has_short(opt) {
-    @argparse.FlagArg(opt.name, short=opt.short, about=opt.description, env?)
+    @argparse.FlagArg(
+      opt.name,
+      short=metadata.short,
+      about=metadata.description,
+      env?,
+    )
   } else {
-    @argparse.FlagArg(opt.name, about=opt.description, env?)
+    @argparse.FlagArg(opt.name, about=metadata.description, env?)
   }
 }
 
 ///|
-fn build_option_to_option_arg(opt : OptionDef) -> @argparse.OptionArg {
-  let env = opt.env.map(fn(value) { value[:] })
-  match (has_short(opt), opt.default_value, opt.required) {
+fn build_option_to_option_arg(opt : StoredOption) -> @argparse.OptionArg {
+  let metadata = opt.metadata
+  let env = metadata.env.map(fn(value) { value[:] })
+  let action = if metadata.multiple {
+    @argparse.OptionAction::Append
+  } else {
+    @argparse.OptionAction::Set
+  }
+  match (has_short(opt), metadata.default_value, metadata.required) {
     (true, Some(dv), _) =>
       @argparse.OptionArg(
         opt.name,
-        short=opt.short,
-        about=opt.description,
+        short=metadata.short,
+        about=metadata.description,
+        action~,
         env?,
         default_values=[dv],
       )
     (true, None, true) =>
       @argparse.OptionArg(
         opt.name,
-        short=opt.short,
-        about=opt.description,
+        short=metadata.short,
+        about=metadata.description,
+        action~,
         env?,
         required=true,
       )
     (true, None, false) =>
       @argparse.OptionArg(
         opt.name,
-        short=opt.short,
-        about=opt.description,
+        short=metadata.short,
+        about=metadata.description,
+        action~,
         env?,
       )
     (false, Some(dv), _) =>
-      @argparse.OptionArg(opt.name, about=opt.description, env?, default_values=[
+      @argparse.OptionArg(opt.name, about=metadata.description, action~, env?, default_values=[
         dv,
       ])
     (false, None, true) =>
-      @argparse.OptionArg(opt.name, about=opt.description, env?, required=true)
+      @argparse.OptionArg(
+        opt.name,
+        about=metadata.description,
+        action~,
+        env?,
+        required=true,
+      )
     (false, None, false) =>
-      @argparse.OptionArg(opt.name, about=opt.description, env?)
+      @argparse.OptionArg(opt.name, about=metadata.description, action~, env?)
   }
 }
 
 ///|
-fn build_positional(pos : PositionalDef) -> @argparse.PositionArg {
-  if pos.required {
-    @argparse.PositionArg(
-      pos.name,
-      about=pos.description,
-      num_args=@argparse.ValueRange(lower=1),
-    )
-  } else {
-    @argparse.PositionArg(
-      pos.name,
-      about=pos.description,
-      num_args=@argparse.ValueRange(lower=0),
-    )
+fn build_position(position : StoredPosition) -> @argparse.PositionArg {
+  let metadata = position.metadata
+  let num_args = match (metadata.required, metadata.multiple) {
+    (true, false) => @argparse.ValueRange::single()
+    (false, false) => @argparse.ValueRange(lower=0, upper=1)
+    (true, true) => @argparse.ValueRange(lower=1)
+    (false, true) => @argparse.ValueRange(lower=0)
   }
+  @argparse.PositionArg(position.name, about=metadata.description, num_args~)
 }
 
 ///|
@@ -78,13 +94,15 @@ pub fn build_command(cmd : CommandDef) -> @argparse.Command {
   let flags : Array[@argparse.FlagArg] = []
   let options : Array[@argparse.OptionArg] = []
   for opt in cmd.options {
-    match opt.type_ {
+    match opt.metadata.type_ {
       BoolOpt => flags.push(build_option_to_flag(opt))
       StringOpt | IntOpt | Int64Opt | UIntOpt | UInt64Opt | DoubleOpt =>
         options.push(build_option_to_option_arg(opt))
     }
   }
-  let positionals = cmd.positionals.map(fn(p) { build_positional(p) })
+  let positionals = cmd.positionals.map(fn(position) {
+    build_position(position)
+  })
   let subcommands = cmd.subcommands.map(fn(sub) { build_command(sub) })
   @argparse.Command(
     cmd.name,
