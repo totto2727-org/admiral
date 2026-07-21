@@ -83,6 +83,60 @@ test "get_int_required returns value" {
 }
 
 ///|
+test "numeric getters parse supported string number types" {
+  let values : Map[String, Array[String]] = {
+    "int64": ["9223372036854775807"],
+    "uint": ["4294967295"],
+    "uint64": ["18446744073709551615"],
+    "double": ["1.25"],
+  }
+  let ctx : Context = { flags: Map([]), values, subcommand: None }
+  debug_inspect(
+    ctx.get_int64("int64").map(fn(value) { value.to_string() }),
+    content="Some(\"9223372036854775807\")",
+  )
+  debug_inspect(
+    ctx.get_uint("uint").map(fn(value) { value.to_string() }),
+    content="Some(\"4294967295\")",
+  )
+  debug_inspect(
+    ctx.get_uint64("uint64").map(fn(value) { value.to_string() }),
+    content="Some(\"18446744073709551615\")",
+  )
+  debug_inspect(ctx.get_double("double"), content="Some(1.25)")
+}
+
+///|
+test "numeric getters return None for invalid values" {
+  let values : Map[String, Array[String]] = {
+    "int64": ["invalid"],
+    "uint": ["-1"],
+    "uint64": ["invalid"],
+    "double": ["invalid"],
+  }
+  let ctx : Context = { flags: Map([]), values, subcommand: None }
+  debug_inspect(ctx.get_int64("int64"), content="None")
+  debug_inspect(ctx.get_uint("uint"), content="None")
+  debug_inspect(ctx.get_uint64("uint64"), content="None")
+  debug_inspect(ctx.get_double("double"), content="None")
+}
+
+///|
+test "required numeric getters return parsed values" {
+  let values : Map[String, Array[String]] = {
+    "int64": ["42"],
+    "uint": ["42"],
+    "uint64": ["42"],
+    "double": ["1.25"],
+  }
+  let ctx : Context = { flags: Map([]), values, subcommand: None }
+  inspect(ctx.get_int64_required("int64").to_string(), content="42")
+  inspect(ctx.get_uint_required("uint").to_string(), content="42")
+  inspect(ctx.get_uint64_required("uint64").to_string(), content="42")
+  inspect(ctx.get_double_required("double"), content="1.25")
+}
+
+///|
 test "get_strings returns all values" {
   let values : Map[String, Array[String]] = { "files": ["a.txt", "b.txt"] }
   let ctx : Context = { flags: Map([]), values, subcommand: None }

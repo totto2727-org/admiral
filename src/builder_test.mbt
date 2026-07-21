@@ -7,6 +7,10 @@ test "build_command converts simple command" {
       string("name", short='n', description="Name to greet", required=true),
       bool("verbose", short='v', description="Verbose output"),
       int("count", short='c', description="Repeat count", default=Some(1)),
+      int64("offset", description="Signed 64-bit offset"),
+      uint("retries", description="Unsigned count"),
+      uint64("limit", description="Unsigned 64-bit limit"),
+      double("ratio", description="Floating-point ratio"),
     ],
     positionals: [],
     examples: [],
@@ -19,6 +23,10 @@ test "build_command converts simple command" {
   inspect(help.contains("--name"), content="true")
   inspect(help.contains("--verbose"), content="true")
   inspect(help.contains("--count"), content="true")
+  inspect(help.contains("--offset"), content="true")
+  inspect(help.contains("--retries"), content="true")
+  inspect(help.contains("--limit"), content="true")
+  inspect(help.contains("--ratio"), content="true")
 }
 
 ///|

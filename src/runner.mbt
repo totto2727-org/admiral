@@ -87,7 +87,8 @@ pub async fn CliApp::run(
   for opt in self.root_options {
     match opt.type_ {
       BoolOpt => flags.push(build_option_to_flag(opt))
-      StringOpt | IntOpt => options.push(build_option_to_option_arg(opt))
+      StringOpt | IntOpt | Int64Opt | UIntOpt | UInt64Opt | DoubleOpt =>
+        options.push(build_option_to_option_arg(opt))
     }
   }
   let subcommands = self.commands.map(fn(c) { build_command(c) })

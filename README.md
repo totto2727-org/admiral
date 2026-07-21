@@ -6,7 +6,7 @@ This repository is a fork of [mizchi/admiral](https://github.com/mizchi/admiral)
 
 A native-first wrapper around `moonbitlang/core/argparse` that provides:
 
-- Typed option helpers (`string`, `bool`, `int`, `positional`)
+- Typed option helpers (`string`, `bool`, `int`, `int64`, `uint`, `uint64`, `double`, `positional`)
 - Optional configuration loading through the standard env path
 - Async `run` callbacks for commands and nested subcommands
 - Structured JSON schema output for AI agent integration
@@ -450,6 +450,10 @@ myapp completion --shell fish > ~/.config/fish/completions/myapp.fish
 | `string(name, short?, description?, env?, required?, default?)` | String option (`--name value`) |
 | `bool(name, short?, description?, env?)` | Boolean flag (`--verbose`) |
 | `int(name, short?, description?, env?, required?, default?)` | Integer option (`--port 8080`) |
+| `int64(name, short?, description?, env?, required?, default?)` | 64-bit signed integer option |
+| `uint(name, short?, description?, env?, required?, default?)` | Unsigned integer option |
+| `uint64(name, short?, description?, env?, required?, default?)` | 64-bit unsigned integer option |
+| `double(name, short?, description?, env?, required?, default?)` | Double-precision floating-point option |
 | `positional(name, description?, required?)` | Positional argument |
 
 ### Command Definition
@@ -468,6 +472,14 @@ myapp completion --shell fish > ~/.config/fish/completions/myapp.fish
 | `get_string_required(name)` | `String raise` | First value, raises if missing |
 | `get_int(name)` | `Int?` | Parsed integer value |
 | `get_int_required(name)` | `Int raise` | Parsed integer, raises if missing/invalid |
+| `get_int64(name)` | `Int64?` | Parsed 64-bit signed integer value |
+| `get_int64_required(name)` | `Int64 raise` | Parsed 64-bit signed integer, raises if missing/invalid |
+| `get_uint(name)` | `UInt?` | Parsed unsigned integer value |
+| `get_uint_required(name)` | `UInt raise` | Parsed unsigned integer, raises if missing/invalid |
+| `get_uint64(name)` | `UInt64?` | Parsed 64-bit unsigned integer value |
+| `get_uint64_required(name)` | `UInt64 raise` | Parsed 64-bit unsigned integer, raises if missing/invalid |
+| `get_double(name)` | `Double?` | Parsed double-precision floating-point value |
+| `get_double_required(name)` | `Double raise` | Parsed double-precision floating-point value, raises if missing/invalid |
 | `get_strings(name)` | `Array[String]` | All values for an option |
 | `get_subcommand()` | `(String, Context)?` | Selected subcommand name and context |
 

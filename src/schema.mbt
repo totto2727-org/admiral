@@ -4,6 +4,10 @@ fn option_type_to_string(t : OptionType) -> String {
     StringOpt => "string"
     BoolOpt => "bool"
     IntOpt => "int"
+    Int64Opt => "int64"
+    UIntOpt => "uint"
+    UInt64Opt => "uint64"
+    DoubleOpt => "double"
   }
 }
 

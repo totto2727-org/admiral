@@ -5,6 +5,10 @@ test "render_schema outputs JSON for simple command" {
       string("name", short='n', description="Name to greet", required=true),
       bool("verbose", short='v', description="Verbose output"),
       int("count", description="Repeat count", default=Some(3)),
+      int64("offset"),
+      uint("retries"),
+      uint64("limit"),
+      double("ratio"),
     ]),
   ])
   let schema = app.render_schema()
@@ -18,6 +22,10 @@ test "render_schema outputs JSON for simple command" {
   inspect(schema.contains("\"type\":\"bool\""), content="true")
   inspect(schema.contains("\"style\":\"flag\""), content="true")
   inspect(schema.contains("\"type\":\"int\""), content="true")
+  inspect(schema.contains("\"type\":\"int64\""), content="true")
+  inspect(schema.contains("\"type\":\"uint\""), content="true")
+  inspect(schema.contains("\"type\":\"uint64\""), content="true")
+  inspect(schema.contains("\"type\":\"double\""), content="true")
   inspect(schema.contains("\"default\":\"3\""), content="true")
   inspect(schema.contains("\"short\":\"n\""), content="true")
 }

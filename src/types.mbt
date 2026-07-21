@@ -3,6 +3,10 @@ pub(all) enum OptionType {
   StringOpt
   BoolOpt
   IntOpt
+  Int64Opt
+  UIntOpt
+  UInt64Opt
+  DoubleOpt
 } derive(Debug, Eq)
 
 ///|
@@ -11,6 +15,10 @@ pub impl Show for OptionType with fn output(self, logger) {
     StringOpt => logger.write_string("StringOpt")
     BoolOpt => logger.write_string("BoolOpt")
     IntOpt => logger.write_string("IntOpt")
+    Int64Opt => logger.write_string("Int64Opt")
+    UIntOpt => logger.write_string("UIntOpt")
+    UInt64Opt => logger.write_string("UInt64Opt")
+    DoubleOpt => logger.write_string("DoubleOpt")
   }
 }
 

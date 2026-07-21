@@ -67,6 +67,54 @@ async test "env supplies string int and bool options" {
 }
 
 ///|
+async test "argv supplies all supported numeric option types" {
+  let captured = Ref("")
+  let app = cli(name="test-app", commands=[
+    command(
+      name="numbers",
+      options=[
+        int("int"),
+        int64("int64"),
+        uint("uint"),
+        uint64("uint64"),
+        double("double"),
+      ],
+      run=Some(fn(ctx) {
+        captured.val = [
+          ctx.get_int("int").map(fn(value) { value.to_string() }).unwrap_or(""),
+          ctx
+          .get_int64("int64")
+          .map(fn(value) { value.to_string() })
+          .unwrap_or(""),
+          ctx
+          .get_uint("uint")
+          .map(fn(value) { value.to_string() })
+          .unwrap_or(""),
+          ctx
+          .get_uint64("uint64")
+          .map(fn(value) { value.to_string() })
+          .unwrap_or(""),
+          ctx
+          .get_double("double")
+          .map(fn(value) { value.to_string() })
+          .unwrap_or(""),
+        ].join(":")
+      }),
+    ),
+  ])
+  app.run(
+    argv=Some([
+      "numbers", "--int=-42", "--int64", "9223372036854775807", "--uint", "4294967295",
+      "--uint64", "18446744073709551615", "--double", "1.25",
+    ]),
+  )
+  inspect(
+    captured.val,
+    content="-42:9223372036854775807:4294967295:18446744073709551615:1.25",
+  )
+}
+
+///|
 async test "argv overrides env and configured default" {
   let captured = Ref("")
   let app = cli(name="test-app", commands=[

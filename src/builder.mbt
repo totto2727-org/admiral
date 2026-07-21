@@ -80,7 +80,8 @@ pub fn build_command(cmd : CommandDef) -> @argparse.Command {
   for opt in cmd.options {
     match opt.type_ {
       BoolOpt => flags.push(build_option_to_flag(opt))
-      StringOpt | IntOpt => options.push(build_option_to_option_arg(opt))
+      StringOpt | IntOpt | Int64Opt | UIntOpt | UInt64Opt | DoubleOpt =>
+        options.push(build_option_to_option_arg(opt))
     }
   }
   let positionals = cmd.positionals.map(fn(p) { build_positional(p) })
