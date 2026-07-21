@@ -243,6 +243,171 @@ async test "env reaches nested command options" {
 }
 
 ///|
+async test "config supplies scalar options through argparse env" {
+  let loaded = Ref(0)
+  let captured = Ref("")
+  let app = cli(
+    name="test-app",
+    load_config=Some(fn() {
+      loaded.val = loaded.val + 1
+      {
+        "ADMIRAL_CONFIG_NAME": "config-name",
+        "ADMIRAL_CONFIG_PORT": "7000",
+        "ADMIRAL_CONFIG_VERBOSE": "true",
+      }
+    }),
+    commands=[
+      command(
+        name="serve",
+        options=[
+          string("name", env="ADMIRAL_CONFIG_NAME", required=true),
+          int("port", env="ADMIRAL_CONFIG_PORT", default=Some(3000)),
+          bool("verbose", env="ADMIRAL_CONFIG_VERBOSE"),
+        ],
+        run=Some(fn(ctx) {
+          captured.val = "\{ctx.get_string("name").unwrap_or("")}:\{ctx.get_int("port").unwrap_or(0)}:\{ctx.get_bool("verbose")}"
+        }),
+      ),
+    ],
+  )
+  app.run(argv=Some(["serve"]), env=Map([]))
+  inspect(loaded.val, content="1")
+  inspect(captured.val, content="config-name:7000:true")
+}
+
+///|
+async test "config precedence is below argv and real env and above defaults" {
+  let captured = Ref("")
+  let app = cli(
+    name="test-app",
+    load_config=Some(fn() {
+      {
+        "ADMIRAL_CONFIG_ARGV": "config-argv",
+        "ADMIRAL_CONFIG_ENV": "config-env",
+        "ADMIRAL_CONFIG_ONLY": "config-only",
+      }
+    }),
+    commands=[
+      command(
+        name="show",
+        options=[
+          string(
+            "argv-value",
+            env="ADMIRAL_CONFIG_ARGV",
+            default=Some("default-argv"),
+          ),
+          string(
+            "env-value",
+            env="ADMIRAL_CONFIG_ENV",
+            default=Some("default-env"),
+          ),
+          string(
+            "config-value",
+            env="ADMIRAL_CONFIG_ONLY",
+            default=Some("default-config"),
+          ),
+          string("default-value", default=Some("default-only")),
+        ],
+        run=Some(fn(ctx) {
+          captured.val = [
+            ctx.get_string("argv-value").unwrap_or(""),
+            ctx.get_string("env-value").unwrap_or(""),
+            ctx.get_string("config-value").unwrap_or(""),
+            ctx.get_string("default-value").unwrap_or(""),
+          ].join(":")
+        }),
+      ),
+    ],
+  )
+  app.run(argv=Some(["show", "--argv-value", "argv-only"]), env={
+    "ADMIRAL_CONFIG_ARGV": "env-argv",
+    "ADMIRAL_CONFIG_ENV": "env-only",
+  })
+  inspect(captured.val, content="argv-only:env-only:config-only:default-only")
+}
+
+///|
+async test "config satisfies required option through argparse" {
+  let captured = Ref("")
+  let app = cli(
+    name="test-app",
+    load_config=Some(fn() { { "ADMIRAL_CONFIG_REQUIRED": "config-required" } }),
+    commands=[
+      command(
+        name="run",
+        options=[string("name", env="ADMIRAL_CONFIG_REQUIRED", required=true)],
+        run=Some(fn(ctx) { captured.val = ctx.get_string("name").unwrap_or("") }),
+      ),
+    ],
+  )
+  app.run(argv=Some(["run"]), env=Map([]))
+  inspect(captured.val, content="config-required")
+}
+
+///|
+async test "empty config keeps argparse required validation" {
+  let called = Ref(false)
+  let app = cli(name="test-app", load_config=Some(fn() { Map([]) }), commands=[
+    command(
+      name="run",
+      options=[string("name", env="ADMIRAL_CONFIG_MISSING", required=true)],
+      run=Some(fn(_) { called.val = true }),
+    ),
+  ])
+  let error_message = Ref("")
+  app.run(argv=Some(["run"]), env=Map([])) catch {
+    error => error_message.val = error.to_string()
+  }
+  inspect(
+    error_message.val.contains(
+      "the following required argument was not provided: 'name'",
+    ),
+    content="true",
+  )
+  inspect(called.val, content="false")
+}
+
+///|
+async test "config env value remains a single string" {
+  let captured : Ref[Array[String]] = Ref([])
+  let app = cli(
+    name="test-app",
+    load_config=Some(fn() { { "ADMIRAL_CONFIG_TAGS": "a,b" } }),
+    commands=[
+      command(
+        name="show",
+        options=[string("tags", env="ADMIRAL_CONFIG_TAGS")],
+        run=Some(fn(ctx) { captured.val = ctx.get_strings("tags") }),
+      ),
+    ],
+  )
+  app.run(argv=Some(["show"]), env=Map([]))
+  inspect(captured.val.length(), content="1")
+  inspect(captured.val[0], content="a,b")
+  app.run(argv=Some(["show"]), env={ "ADMIRAL_CONFIG_TAGS": "x,y" })
+  inspect(captured.val.length(), content="1")
+  inspect(captured.val[0], content="x,y")
+}
+
+///|
+async test "config load failure propagates before command execution" {
+  let called = Ref(false)
+  let app = cli(
+    name="test-app",
+    load_config=Some(fn() -> Map[String, String] raise ConfigLoadFailure {
+      raise ConfigLoadFailure("cannot load config")
+    }),
+    commands=[command(name="run", run=Some(fn(_) { called.val = true }))],
+  )
+  let error_message = Ref("")
+  app.run(argv=Some(["run"]), env=Map([])) catch {
+    error => error_message.val = error.to_string()
+  }
+  inspect(error_message.val.contains("cannot load config"), content="true")
+  inspect(called.val, content="false")
+}
+
+///|
 async test "cli run with bool flag" {
   let was_verbose = Ref(false)
   let app = cli(name="test-app", version="0.1.0", description="Test", commands=[

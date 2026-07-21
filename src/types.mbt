@@ -44,6 +44,18 @@ pub(all) struct CommandDef {
 }
 
 ///|
+pub(all) suberror ConfigLoadFailure {
+  ConfigLoadFailure(String)
+} derive(Debug, Eq)
+
+///|
+pub impl Show for ConfigLoadFailure with fn output(self, logger) {
+  match self {
+    ConfigLoadFailure(message) => logger.write_string(message)
+  }
+}
+
+///|
 pub(all) struct Context {
   flags : Map[String, Bool]
   values : Map[String, Array[String]]
@@ -57,4 +69,5 @@ pub(all) struct CliApp {
   description : String
   root_options : Array[OptionDef]
   commands : Array[CommandDef]
+  load_config : (() -> Map[String, String] raise ConfigLoadFailure)?
 }

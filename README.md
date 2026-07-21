@@ -7,6 +7,7 @@ This repository is a fork of [mizchi/admiral](https://github.com/mizchi/admiral)
 A native-first wrapper around `moonbitlang/core/argparse` that provides:
 
 - Typed option helpers (`string`, `bool`, `int`, `positional`)
+- Optional configuration loading through the standard env path
 - Async `run` callbacks for commands and nested subcommands
 - Structured JSON schema output for AI agent integration
 - Shell completion generation (bash, zsh, fish)
@@ -164,6 +165,44 @@ it never resolves or embeds the variable's runtime value.
 `OptionDef` is public, so code that constructs it directly with a struct literal
 must add `env: None` (or `env: Some("MYAPP_NAME")`). Calls through the `string`,
 `bool`, and `int` helpers remain source-compatible because `env` is optional.
+
+### Configuration
+
+Pass an optional argument-less `load_config` callback to `cli`.
+The callback can read any configuration format, but must return a `Map[String, String]` whose keys are the environment-variable names configured on options:
+
+```moonbit
+fn load_config() -> Map[String, String] raise @admiral.ConfigLoadFailure {
+  {
+    "MYAPP_PORT": "7000",
+    "MYAPP_VERBOSE": "true",
+  }
+}
+
+let app = @admiral.cli(
+  name="myapp",
+  load_config=Some(load_config),
+  commands=[...],
+)
+```
+
+`CliApp::run` merges the config map first and the real env map second, so real environment variables overwrite config values.
+The merged map is passed directly to `core/argparse`; admiral does not implement a separate config value resolver.
+
+Values resolve in the order `argv > env > config > default`.
+Config values are available only to options that declare the corresponding `env` name.
+Required validation and scalar conversion are handled by `core/argparse` in the same way as ordinary env values.
+
+Both env and config values are scalar strings.
+Values such as `"a,b"` remain one string and are not split into arrays.
+Return `Map([])` when no configuration values are available.
+
+`ConfigLoadFailure` is the typed error for the callback.
+For example, a loader can report `raise @admiral.ConfigLoadFailure("config file is unreadable")`.
+
+`CliApp` is a public record.
+Direct struct-literal callers must add `load_config` to `CliApp`.
+Calls through `cli` remain source-compatible because `load_config` is optional.
 
 ### Reading Values from Context
 

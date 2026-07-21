@@ -27,8 +27,9 @@ pub fn cli(
   description? : String = "",
   options? : Array[OptionDef] = [],
   commands? : Array[CommandDef] = [],
+  load_config? : (() -> Map[String, String] raise ConfigLoadFailure)? = None,
 ) -> CliApp {
-  { name, version, description, root_options: options, commands }
+  { name, version, description, root_options: options, commands, load_config }
 }
 
 ///|
@@ -99,9 +100,13 @@ pub async fn CliApp::run(
     subcommands~,
     arg_required_else_help=true,
   )
+  let effective_env = match self.load_config {
+    Some(load_config) => load_config().merge(env)
+    None => env
+  }
   let matches = match argv {
-    Some(args) => argparse_cmd.parse(argv=args, env~)
-    None => argparse_cmd.parse(env~)
+    Some(args) => argparse_cmd.parse(argv=args, env=effective_env)
+    None => argparse_cmd.parse(env=effective_env)
   }
   let ctx = matches_to_context(matches)
   execute_command(self.commands, ctx)
