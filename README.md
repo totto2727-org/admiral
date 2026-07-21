@@ -47,7 +47,13 @@ async fn main {
         name="greet",
         description="Greet someone",
         options=[
-          @admiral.string("name", short='n', description="Name to greet", required=true),
+          @admiral.string(
+            "name",
+            short='n',
+            description="Name to greet",
+            env="ADMIRAL_NAME",
+            required=true,
+          ),
           @admiral.bool("verbose", short='v', description="Verbose output"),
           @admiral.int("count", short='c', description="Repeat count", default=Some(1)),
         ],
@@ -101,19 +107,63 @@ Three types of options, plus positional arguments:
 
 ```moonbit
 // String option: --name value or -n value
-@admiral.string("name", short='n', description="User name", required=true)
+@admiral.string("name", short='n', description="User name", env="MYAPP_NAME", required=true)
 
 // Bool flag: --verbose or -v
-@admiral.bool("verbose", short='v', description="Verbose output")
+@admiral.bool("verbose", short='v', description="Verbose output", env="MYAPP_VERBOSE")
 
 // Int option: --port 8080 or -p 8080
-@admiral.int("port", short='p', description="Port number", default=Some(3000))
+@admiral.int("port", short='p', description="Port number", env="MYAPP_PORT", default=Some(3000))
 
 // Positional argument
 @admiral.positional("file", description="Input file", required=true)
 ```
 
-`short` is optional — omit it to only allow the long form (`--name`).
+`short` and `env` are optional. Omit `short` to only allow the long form
+(`--name`); set `env` to allow the option to read from that environment variable.
+
+### Environment Variables
+
+`string`, `bool`, and `int` accept an optional `env` argument containing the
+environment variable name:
+
+```moonbit
+@admiral.string("name", env="MYAPP_NAME")
+@admiral.bool("verbose", env="MYAPP_VERBOSE")
+@admiral.int("port", env="MYAPP_PORT")
+```
+
+`app.run()` reads process arguments and the process environment by default. For
+tests or embedding, inject either source explicitly:
+
+```moonbit
+app.run(
+  argv=Some(["serve"]),
+  env={
+    "MYAPP_PORT": "8080",
+    "MYAPP_VERBOSE": "true",
+  },
+)
+
+// An empty map prevents ambient process variables from affecting the parse.
+app.run(argv=Some(["serve"]), env=Map([]))
+```
+
+Values resolve in the order `argv > env > default_values`. Environment-backed
+boolean flags accept `1`, `0`, `true`, `false`, `yes`, `no`, `on`, and `off`.
+Precedence is defined by
+[`moonbitlang/core/argparse`](https://github.com/moonbitlang/core/blob/497e1dc951b493cb7788f7a156e3aff45e0514f6/argparse/command.mbt#L97-L115).
+Boolean literals are handled by its
+[`bool` environment parser](https://github.com/moonbitlang/core/blob/497e1dc951b493cb7788f7a156e3aff45e0514f6/argparse/parser_values.mbt#L275-L313).
+The default process map comes from
+[`moonbitlang/core/env`](https://mooncakes.io/docs/moonbitlang/core/env).
+
+The generated schema contains only the configured environment variable name;
+it never resolves or embeds the variable's runtime value.
+
+`OptionDef` is public, so code that constructs it directly with a struct literal
+must add `env: None` (or `env: Some("MYAPP_NAME")`). Calls through the `string`,
+`bool`, and `int` helpers remain source-compatible because `env` is optional.
 
 ### Reading Values from Context
 
@@ -278,7 +328,7 @@ Example output:
     "greet": {
       "description": "Greet someone",
       "options": {
-        "name": { "type": "string", "description": "Name to greet", "required": true, "short": "n" },
+        "name": { "type": "string", "description": "Name to greet", "required": true, "short": "n", "env": "ADMIRAL_NAME" },
         "verbose": { "type": "bool", "description": "Verbose output", "required": false, "short": "v" },
         "count": { "type": "int", "description": "Repeat count", "required": false, "short": "c", "default": "1" }
       },
@@ -358,9 +408,9 @@ myapp completion --shell fish > ~/.config/fish/completions/myapp.fish
 
 | Function | Description |
 |----------|-------------|
-| `string(name, short?, description?, required?, default?)` | String option (`--name value`) |
-| `bool(name, short?, description?)` | Boolean flag (`--verbose`) |
-| `int(name, short?, description?, required?, default?)` | Integer option (`--port 8080`) |
+| `string(name, short?, description?, env?, required?, default?)` | String option (`--name value`) |
+| `bool(name, short?, description?, env?)` | Boolean flag (`--verbose`) |
+| `int(name, short?, description?, env?, required?, default?)` | Integer option (`--port 8080`) |
 | `positional(name, description?, required?)` | Positional argument |
 
 ### Command Definition
@@ -397,9 +447,20 @@ myapp completion --shell fish > ~/.config/fish/completions/myapp.fish
 ```moonbit
 app.run()                                    // use process args
 app.run(argv=Some(["greet", "--name", "x"])) // explicit args (for testing)
+app.run(env={ "ADMIRAL_NAME": "Env" })       // explicit environment map
+app.run(
+  argv=Some(["greet"]),
+  env={ "ADMIRAL_NAME": "Env" },
+)
 ```
 
-`CliApp::run` is async. Call it from `async fn main` or `async test`; no task-group wrapper is required. `--help` and `--version` are automatically handled by argparse. Invoking the app without a runnable command, or a command group without its required subcommand, displays the corresponding help. Unknown commands, invalid options, and errors raised by command callbacks remain errors.
+`CliApp::run(argv?, env?)` is async. Omitted `argv` uses process arguments, and
+omitted `env` uses the process environment. Call it from `async fn main` or
+`async test`; no task-group wrapper is required. `--help` and `--version` are
+automatically handled by argparse. Invoking the app without a runnable command,
+or a command group without its required subcommand, displays the corresponding
+help. Unknown commands, invalid options, and errors raised by command callbacks
+remain errors.
 
 ## Targets
 

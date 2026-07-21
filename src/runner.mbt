@@ -76,7 +76,11 @@ async fn execute_command(commands : Array[CommandDef], ctx : Context) -> Unit {
 }
 
 ///|
-pub async fn CliApp::run(self : CliApp, argv? : Array[String]? = None) -> Unit {
+pub async fn CliApp::run(
+  self : CliApp,
+  argv? : Array[String]? = None,
+  env? : Map[String, String] = @env.get_env_vars(),
+) -> Unit {
   let flags : Array[@argparse.FlagArg] = []
   let options : Array[@argparse.OptionArg] = []
   for opt in self.root_options {
@@ -96,8 +100,8 @@ pub async fn CliApp::run(self : CliApp, argv? : Array[String]? = None) -> Unit {
     arg_required_else_help=true,
   )
   let matches = match argv {
-    Some(args) => argparse_cmd.parse(argv=args)
-    None => argparse_cmd.parse()
+    Some(args) => argparse_cmd.parse(argv=args, env~)
+    None => argparse_cmd.parse(env~)
   }
   let ctx = matches_to_context(matches)
   execute_command(self.commands, ctx)

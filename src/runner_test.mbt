@@ -27,6 +27,222 @@ async test "cli creates CliApp and run executes async command" {
 }
 
 ///|
+async test "explicit argv preserves configured defaults" {
+  let captured = Ref("")
+  let app = cli(name="test-app", commands=[
+    command(
+      name="greet",
+      options=[string("name", default=Some("fallback"))],
+      run=Some(fn(ctx) {
+        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+      }),
+    ),
+  ])
+  app.run(argv=Some(["greet"]))
+  inspect(captured.val, content="fallback")
+}
+
+///|
+async test "env supplies string int and bool options" {
+  let captured = Ref("")
+  let app = cli(name="test-app", commands=[
+    command(
+      name="serve",
+      options=[
+        string("name", env="ADMIRAL_TEST_NAME"),
+        int("port", env="ADMIRAL_TEST_PORT"),
+        bool("verbose", env="ADMIRAL_TEST_VERBOSE"),
+      ],
+      run=Some(fn(ctx) {
+        captured.val = "\{ctx.get_string("name").unwrap_or("")}:\{ctx.get_int("port").unwrap_or(0)}:\{ctx.get_bool("verbose")}"
+      }),
+    ),
+  ])
+  app.run(argv=Some(["serve"]), env={
+    "ADMIRAL_TEST_NAME": "env-name",
+    "ADMIRAL_TEST_PORT": "4242",
+    "ADMIRAL_TEST_VERBOSE": "true",
+  })
+  inspect(captured.val, content="env-name:4242:true")
+}
+
+///|
+async test "argv overrides env and configured default" {
+  let captured = Ref("")
+  let app = cli(name="test-app", commands=[
+    command(
+      name="greet",
+      options=[
+        string(
+          "name",
+          env="ADMIRAL_TEST_PRECEDENCE",
+          default=Some("default-name"),
+        ),
+      ],
+      run=Some(fn(ctx) {
+        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+      }),
+    ),
+  ])
+  app.run(argv=Some(["greet", "--name", "argv-name"]), env={
+    "ADMIRAL_TEST_PRECEDENCE": "env-name",
+  })
+  inspect(captured.val, content="argv-name")
+}
+
+///|
+async test "env overrides configured default" {
+  let captured = Ref("")
+  let app = cli(name="test-app", commands=[
+    command(
+      name="greet",
+      options=[
+        string(
+          "name",
+          env="ADMIRAL_TEST_ENV_DEFAULT",
+          default=Some("default-name"),
+        ),
+      ],
+      run=Some(fn(ctx) {
+        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+      }),
+    ),
+  ])
+  app.run(argv=Some(["greet"]), env={ "ADMIRAL_TEST_ENV_DEFAULT": "env-name" })
+  inspect(captured.val, content="env-name")
+}
+
+///|
+async test "configured default applies when argv and env omit option" {
+  let captured = Ref("")
+  let app = cli(name="test-app", commands=[
+    command(
+      name="greet",
+      options=[
+        string(
+          "name",
+          env="ADMIRAL_TEST_MISSING_DEFAULT",
+          default=Some("default-name"),
+        ),
+      ],
+      run=Some(fn(ctx) {
+        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+      }),
+    ),
+  ])
+  app.run(argv=Some(["greet"]), env=Map([]))
+  inspect(captured.val, content="default-name")
+}
+
+///|
+async test "env satisfies a required option" {
+  let captured = Ref("")
+  let app = cli(name="test-app", commands=[
+    command(
+      name="greet",
+      options=[string("name", env="ADMIRAL_TEST_REQUIRED", required=true)],
+      run=Some(fn(ctx) {
+        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+      }),
+    ),
+  ])
+  app.run(argv=Some(["greet"]), env={ "ADMIRAL_TEST_REQUIRED": "env-required" })
+  inspect(captured.val, content="env-required")
+}
+
+///|
+async test "missing required option still fails without argv or env" {
+  let called = Ref(false)
+  let app = cli(name="test-app", commands=[
+    command(
+      name="greet",
+      options=[
+        string("name", env="ADMIRAL_TEST_REQUIRED_MISSING", required=true),
+      ],
+      run=Some(fn(_ctx) { called.val = true }),
+    ),
+  ])
+  let error_message = Ref("")
+  app.run(argv=Some(["greet"]), env=Map([])) catch {
+    error => error_message.val = error.to_string()
+  }
+  inspect(
+    error_message.val.contains(
+      "the following required argument was not provided: 'name'",
+    ),
+    content="true",
+  )
+  inspect(called.val, content="false")
+}
+
+///|
+async test "invalid bool env value propagates parse failure" {
+  let called = Ref(false)
+  let app = cli(name="test-app", commands=[
+    command(
+      name="build",
+      options=[bool("verbose", env="ADMIRAL_TEST_INVALID_BOOL")],
+      run=Some(fn(_ctx) { called.val = true }),
+    ),
+  ])
+  let error_message = Ref("")
+  app.run(argv=Some(["build"]), env={
+    "ADMIRAL_TEST_INVALID_BOOL": "definitely-not-bool",
+  }) catch {
+    error => error_message.val = error.to_string()
+  }
+  inspect(
+    error_message.val.contains(
+      "invalid value 'definitely-not-bool' for boolean flag; expected one of: 1, 0, true, false, yes, no, on, off",
+    ),
+    content="true",
+  )
+  inspect(called.val, content="false")
+}
+
+///|
+async test "explicit empty env isolates parsing from ambient environment" {
+  let captured = Ref("")
+  let app = cli(name="test-app", commands=[
+    command(
+      name="greet",
+      options=[
+        string(
+          "name",
+          env="ADMIRAL_TEST_ISOLATED_NAME",
+          default=Some("isolated-default"),
+        ),
+      ],
+      run=Some(fn(ctx) {
+        captured.val = ctx.get_string_required("name") catch { _ => "error" }
+      }),
+    ),
+  ])
+  app.run(argv=Some(["greet"]), env=Map([]))
+  inspect(captured.val, content="isolated-default")
+}
+
+///|
+async test "env reaches nested command options" {
+  let captured = Ref("")
+  let app = cli(name="test-app", commands=[
+    command(name="admin", subcommands=[
+      command(
+        name="greet",
+        options=[string("name", env="ADMIRAL_TEST_NESTED")],
+        run=Some(fn(ctx) {
+          captured.val = ctx.get_string_required("name") catch { _ => "error" }
+        }),
+      ),
+    ]),
+  ])
+  app.run(argv=Some(["admin", "greet"]), env={
+    "ADMIRAL_TEST_NESTED": "nested-env",
+  })
+  inspect(captured.val, content="nested-env")
+}
+
+///|
 async test "cli run with bool flag" {
   let was_verbose = Ref(false)
   let app = cli(name="test-app", version="0.1.0", description="Test", commands=[

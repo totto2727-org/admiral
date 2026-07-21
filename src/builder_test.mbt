@@ -45,3 +45,22 @@ test "build_command converts nested subcommands" {
   let help = argparse_cmd.render_help()
   inspect(help.contains("serve"), content="true")
 }
+
+///|
+test "build_command exposes configured option environment variables in help" {
+  let cmd : CommandDef = {
+    name: "greet",
+    description: "Greet someone",
+    options: [
+      string("name", description="Name to greet", env="APP_NAME"),
+      string("output", description="Output path"),
+    ],
+    positionals: [],
+    examples: [],
+    subcommands: [],
+    run: Some(fn(_ctx) { () }),
+  }
+  let help = build_command(cmd).render_help()
+  inspect(help.contains("APP_NAME"), content="true")
+  inspect(help.contains("Output path [env:"), content="false")
+}

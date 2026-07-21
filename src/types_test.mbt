@@ -5,6 +5,7 @@ test "OptionDef holds string option metadata" {
     type_: @admiral.StringOpt,
     short: 'o',
     description: "Output path",
+    env: None,
     required: true,
     default_value: None,
   }

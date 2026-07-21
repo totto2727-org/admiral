@@ -13,6 +13,7 @@ async fn main {
             "name",
             short='n',
             description="Name to greet",
+            env="ADMIRAL_NAME",
             required=true,
           ),
           @admiral.bool("loud", short='l', description="Shout the greeting"),

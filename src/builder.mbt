@@ -5,34 +5,49 @@ fn has_short(opt : OptionDef) -> Bool {
 
 ///|
 fn build_option_to_flag(opt : OptionDef) -> @argparse.FlagArg {
+  let env = opt.env.map(fn(value) { value[:] })
   if has_short(opt) {
-    @argparse.FlagArg(opt.name, short=opt.short, about=opt.description)
+    @argparse.FlagArg(opt.name, short=opt.short, about=opt.description, env?)
   } else {
-    @argparse.FlagArg(opt.name, about=opt.description)
+    @argparse.FlagArg(opt.name, about=opt.description, env?)
   }
 }
 
 ///|
 fn build_option_to_option_arg(opt : OptionDef) -> @argparse.OptionArg {
+  let env = opt.env.map(fn(value) { value[:] })
   match (has_short(opt), opt.default_value, opt.required) {
     (true, Some(dv), _) =>
-      @argparse.OptionArg(opt.name, short=opt.short, about=opt.description, default_values=[
-        dv,
-      ])
+      @argparse.OptionArg(
+        opt.name,
+        short=opt.short,
+        about=opt.description,
+        env?,
+        default_values=[dv],
+      )
     (true, None, true) =>
       @argparse.OptionArg(
         opt.name,
         short=opt.short,
         about=opt.description,
+        env?,
         required=true,
       )
     (true, None, false) =>
-      @argparse.OptionArg(opt.name, short=opt.short, about=opt.description)
+      @argparse.OptionArg(
+        opt.name,
+        short=opt.short,
+        about=opt.description,
+        env?,
+      )
     (false, Some(dv), _) =>
-      @argparse.OptionArg(opt.name, about=opt.description, default_values=[dv])
+      @argparse.OptionArg(opt.name, about=opt.description, env?, default_values=[
+        dv,
+      ])
     (false, None, true) =>
-      @argparse.OptionArg(opt.name, about=opt.description, required=true)
-    (false, None, false) => @argparse.OptionArg(opt.name, about=opt.description)
+      @argparse.OptionArg(opt.name, about=opt.description, env?, required=true)
+    (false, None, false) =>
+      @argparse.OptionArg(opt.name, about=opt.description, env?)
   }
 }
 

@@ -20,6 +20,7 @@ pub(all) struct OptionDef {
   type_ : OptionType
   short : Char
   description : String
+  env : String?
   required : Bool
   default_value : String?
 } derive(Debug)

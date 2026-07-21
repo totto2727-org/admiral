@@ -40,3 +40,13 @@ test "int() required" {
   inspect(opt.required, content="true")
   debug_inspect(opt.default_value, content="None")
 }
+
+///|
+test "option helpers retain environment variable metadata" {
+  let name = string("name", env="APP_NAME")
+  let verbose = bool("verbose", env="APP_VERBOSE")
+  let port = int("port", env="APP_PORT")
+  debug_inspect(name.env, content="Some(\"APP_NAME\")")
+  debug_inspect(verbose.env, content="Some(\"APP_VERBOSE\")")
+  debug_inspect(port.env, content="Some(\"APP_PORT\")")
+}

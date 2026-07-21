@@ -104,3 +104,39 @@ test "render_schema_json returns Json value" {
   inspect(s.contains("\"hello\""), content="true")
   inspect(s.contains("\"name\""), content="true")
 }
+
+///|
+test "render_schema includes configured environment variable name" {
+  let app = cli(name="test", commands=[
+    command(name="hello", options=[string("name", env="ADMIRAL_SCHEMA_NAME")]),
+  ])
+  let schema = app.render_schema()
+  inspect(schema.contains("\"env\":\"ADMIRAL_SCHEMA_NAME\""), content="true")
+}
+
+///|
+test "render_schema omits env for unconfigured options" {
+  let app = cli(name="test", commands=[
+    command(name="hello", options=[string("name")]),
+  ])
+  let schema = app.render_schema()
+  inspect(schema.contains("\"env\""), content="false")
+}
+
+///|
+test "render_schema does not expose resolved environment values" {
+  let key = "ADMIRAL_SCHEMA_NAME"
+  let sentinel = "SCHEMA_FAKE_RESOLVED_VALUE_7C9F"
+  let previous = @env.get_env_var(key)
+  @env.set_env_var(key, sentinel)
+  let app = cli(name="test", commands=[
+    command(name="hello", options=[string("name", env=key)]),
+  ])
+  let schema = app.render_schema()
+  match previous {
+    Some(value) => @env.set_env_var(key, value)
+    None => @env.unset_env_var(key)
+  }
+  inspect(schema.contains("\"env\":\"ADMIRAL_SCHEMA_NAME\""), content="true")
+  inspect(schema.contains(sentinel), content="false")
+}

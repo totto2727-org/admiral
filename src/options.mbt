@@ -7,6 +7,7 @@ pub fn string(
   name : String,
   short? : Char = '\u0000',
   description? : String = "",
+  env? : String,
   required? : Bool = false,
   default? : String? = None,
 ) -> OptionDef {
@@ -15,6 +16,7 @@ pub fn string(
     type_: StringOpt,
     short,
     description,
+    env,
     required: match default {
       Some(_) => false
       None => required
@@ -28,12 +30,14 @@ pub fn bool(
   name : String,
   short? : Char = '\u0000',
   description? : String = "",
+  env? : String,
 ) -> OptionDef {
   {
     name,
     type_: BoolOpt,
     short,
     description,
+    env,
     required: false,
     default_value: None,
   }
@@ -44,6 +48,7 @@ pub fn int(
   name : String,
   short? : Char = '\u0000',
   description? : String = "",
+  env? : String,
   required? : Bool = false,
   default? : Int? = None,
 ) -> OptionDef {
@@ -52,6 +57,7 @@ pub fn int(
     type_: IntOpt,
     short,
     description,
+    env,
     required: match default {
       Some(_) => false
       None => required

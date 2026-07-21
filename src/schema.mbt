@@ -19,6 +19,10 @@ fn option_def_to_json(opt : OptionDef) -> Json {
   if opt.short != no_short {
     m["short"] = opt.short.to_string().to_json()
   }
+  match opt.env {
+    Some(name) => m["env"] = name.to_json()
+    None => ()
+  }
   match opt.default_value {
     Some(v) => m["default"] = v.to_json()
     None => ()
