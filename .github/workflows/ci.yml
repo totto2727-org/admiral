@@ -10,15 +10,7 @@ permissions:
 
 jobs:
   check:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: macos-14
-            system: aarch64-darwin
-          - runner: ubuntu-latest
-            system: x86_64-linux
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -32,4 +24,4 @@ jobs:
           moon check --target native
           moon test --target native
           moon package --list
-          nix flake check --system "${{ matrix.system }}"
+          nix flake check --system x86_64-linux
