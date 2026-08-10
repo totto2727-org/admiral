@@ -1,6 +1,6 @@
 name = "totto2727/admiral"
 
-version = "0.6.2"
+version = "0.6.3"
 
 readme = "README.mbt.md"
 
@@ -21,6 +21,6 @@ import {
 
 preferred_target = "js"
 
-supported_targets = "+native+js"
+supported_targets = "js+native"
 
 source = "src"

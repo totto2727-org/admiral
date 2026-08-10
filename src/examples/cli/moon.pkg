@@ -1,4 +1,4 @@
-supported_targets = "+native+js"
+supported_targets = "js+native"
 
 import {
   "totto2727/admiral",
