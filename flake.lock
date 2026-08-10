@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "moon-registry": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1786336373,
-        "narHash": "sha256-1TCshCPfy3DnhevhNYPIxZ5vAtGCOI2l5iHZCC7nTsI=",
-        "ref": "refs/heads/main",
-        "rev": "0f6ae700bddeab4b9fda7b12f445b7e0ad92c70e",
-        "revCount": 12145,
-        "type": "git",
-        "url": "https://mooncakes.io/git/index"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://mooncakes.io/git/index"
-      }
-    },
     "moonbit-overlay": {
       "inputs": {
         "nixpkgs": [
@@ -53,7 +37,6 @@
     },
     "root": {
       "inputs": {
-        "moon-registry": "moon-registry",
         "moonbit-overlay": "moonbit-overlay",
         "nixpkgs": "nixpkgs"
       }
