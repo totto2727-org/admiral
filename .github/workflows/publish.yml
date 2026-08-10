@@ -1,19 +1,14 @@
 name: Publish
 
 on:
-  workflow_dispatch:
-    inputs:
-      confirm:
-        description: Type PUBLISH to confirm the authenticated release.
-        required: true
-        type: string
+  push:
+    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
   publish:
-    if: inputs.confirm == 'PUBLISH'
     runs-on: ubuntu-latest
     environment: release
     timeout-minutes: 15
