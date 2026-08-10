@@ -592,7 +592,7 @@ app.run(
 
 ## Targets
 
-The primary Admiral library and CLI surfaces support native and JavaScript targets and prefer JavaScript. The filesystem-based `util/target-file-discovery` subpackage remains native-only because `moonbitlang/async/fs` does not provide a JavaScript implementation.
+The primary Admiral library and CLI surfaces support native and JavaScript targets and prefer JavaScript. The filesystem-based `util/target-file-discovery` subpackage supports native and Node.js through [`mizchi/x`](https://github.com/mizchi/x), which delegates to `moonbitlang/async/fs` on native and provides a Node.js implementation on JavaScript.
 
 ## License
 

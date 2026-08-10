@@ -3,8 +3,8 @@ import {
   "moonbitlang/core/string",
   "moonbitlang/x/path",
   "moonbitlang/async",
-  "moonbitlang/async/fs",
   "moonbitlang/async/io",
+  "mizchi/x/fs",
 }
 
-supported_targets = "native"
+supported_targets = "js+native"

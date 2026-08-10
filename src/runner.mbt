@@ -224,7 +224,7 @@ async fn CliApp::run_with_interactive_environment(
   let argparse_cmd = build_root_command(self, config, interactive_environment~)
   let matches = match argv {
     Some(args) => argparse_cmd.parse(argv=args, env~)
-    None => argparse_cmd.parse(env~)
+    None => argparse_cmd.parse(argv=@x_sys.get_cli_args()[1:], env~)
   }
   let ctx = matches_to_context(matches, config)
   let root_context = apply_interactive_input(
