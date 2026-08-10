@@ -22,7 +22,3 @@ import {
 preferred_target = "native"
 
 source = "src"
-
-options(
-  exclude: [ "package.json" ],
-)
