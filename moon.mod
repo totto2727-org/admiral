@@ -1,6 +1,6 @@
 name = "totto2727/admiral"
 
-version = "0.6.2"
+version = "0.6.3"
 
 readme = "README.mbt.md"
 
@@ -19,6 +19,8 @@ import {
   "totto2727/lens@0.4.0",
 }
 
-preferred_target = "native"
+preferred_target = "js"
+
+supported_targets = "js+native"
 
 source = "src"

@@ -2,9 +2,9 @@
 
 Declarative CLI builder for MoonBit, inspired by [gunshi](https://github.com/kazupon/gunshi).
 
-This package is a fork of [mizchi/admiral](https://github.com/mizchi/admiral). It preserves the upstream MIT license and adds async-first native command execution and help fallback behavior.
+This package is a fork of [mizchi/admiral](https://github.com/mizchi/admiral). It preserves the upstream MIT license and adds async-first command execution and help fallback behavior.
 
-A native-first wrapper around `moonbitlang/core/argparse` that provides:
+A cross-target wrapper around `moonbitlang/core/argparse` that provides:
 
 - Typed option helpers (`string`, `bool`, `int`, `int64`, `uint`, `uint64`, `double`, `positional`)
 - Optional configuration loading through independent config keys
@@ -20,11 +20,13 @@ Add to `moon.mod`:
 
 ```moonbit
 import {
-  "totto2727/admiral@0.6.2",
+  "totto2727/admiral@0.6.3",
   "moonbitlang/async@0.20.3",
 }
 
-preferred_target = "native"
+preferred_target = "js"
+
+supported_targets = "js+native"
 ```
 
 Add to `moon.pkg`:
@@ -590,7 +592,7 @@ app.run(
 
 ## Targets
 
-Admiral supports the native target. This follows the current support level of the official `moonbitlang/async` runtime.
+The primary Admiral library and CLI surfaces support native and JavaScript targets and prefer JavaScript. The filesystem-based `util/target-file-discovery` subpackage remains native-only because `moonbitlang/async/fs` does not provide a JavaScript implementation.
 
 ## License
 
