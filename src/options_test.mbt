@@ -21,6 +21,12 @@ test "string() with default value" {
 }
 
 ///|
+test "string() retains interactive input metadata" {
+  let opt = string("project", interactive=true)
+  inspect(opt.metadata.interactive, content="true")
+}
+
+///|
 test "bool() creates BoolOpt OptionDef" {
   let opt = bool("verbose", short='v', description="Verbose output")
   inspect(opt.metadata.type_, content="BoolOpt")
@@ -73,6 +79,17 @@ test "option helpers retain environment variable metadata" {
   debug_inspect(retries.metadata.env, content="Some(\"APP_RETRIES\")")
   debug_inspect(limit.metadata.env, content="Some(\"APP_LIMIT\")")
   debug_inspect(ratio.metadata.env, content="Some(\"APP_RATIO\")")
+}
+
+///|
+test "option helpers retain independent config keys" {
+  let name = string("name", env="APP_NAME", config="display_name")
+  let verbose = bool("verbose", config="debug")
+  let port = int("port", config="listen_port")
+  debug_inspect(name.config, content="Some(\"display_name\")")
+  debug_inspect(verbose.config, content="Some(\"debug\")")
+  debug_inspect(port.config, content="Some(\"listen_port\")")
+  debug_inspect(name.metadata.env, content="Some(\"APP_NAME\")")
 }
 
 ///|

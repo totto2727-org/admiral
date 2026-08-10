@@ -1,12 +1,24 @@
 ///|
+using @admiral {
+  type CliApp,
+  type CommandDef,
+  int,
+  ints,
+  position_int,
+  position_string,
+  position_strings,
+  string,
+}
+
+///|
 async test "array option appends and parses repeated values" {
   let values = ints("value", required=true)
-  let captured : Ref[Array[Int]] = Ref([])
-  let app = cli(name="test", commands=[
-    command(
+  let captured : Ref[ReadOnlyArray[Int]] = Ref([])
+  let app = CliApp::CliApp(name="test", commands=[
+    CommandDef::CommandDef(
       name="collect",
       options=[values],
-      run=Some(ctx => captured.val = ctx.get_ints_required(values)),
+      run=Some(ctx => captured.val = ctx.get_ints_required(values).all),
     ),
   ])
   app.run(
@@ -22,8 +34,8 @@ async test "array option appends and parses repeated values" {
 async test "scalar option rejects repeated values" {
   let value = int("value")
   let called = Ref(false)
-  let app = cli(name="test", commands=[
-    command(
+  let app = CliApp::CliApp(name="test", commands=[
+    CommandDef::CommandDef(
       name="collect",
       options=[value],
       run=Some(fn(_ctx) { called.val = true }),

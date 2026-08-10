@@ -1,4 +1,6 @@
 _build/
+.moon/
 .mooncakes/
-.omo/
-pkg.generated.mbti
+*.generated.mbti
+result
+result-*
