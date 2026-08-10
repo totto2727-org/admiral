@@ -19,6 +19,8 @@ import {
   "totto2727/lens@0.4.0",
 }
 
-preferred_target = "native"
+preferred_target = "js"
+
+supported_targets = "+native+js"
 
 source = "src"
