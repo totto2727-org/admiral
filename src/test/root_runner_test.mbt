@@ -7,8 +7,7 @@ async test "CliApp run - executes root callback" {
     name="mdt",
     options=[lang],
     positionals=[file],
-    run=Some(async fn(context) {
-      @async.sleep(0)
+    run=Some(context => {
       observed.val = context.get_string_required(file) +
         ":" +
         context.get_string_required(lang)

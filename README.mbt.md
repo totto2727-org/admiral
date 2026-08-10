@@ -20,13 +20,13 @@ Add to `moon.mod`:
 
 ```moonbit
 import {
-  "totto2727/admiral@0.6.3",
+  "totto2727/admiral@0.6.4",
   "moonbitlang/async@0.20.3",
 }
 
 preferred_target = "js"
 
-supported_targets = "js+native"
+supported_targets = "js+native+wasm"
 ```
 
 Add to `moon.pkg`:
@@ -592,7 +592,7 @@ app.run(
 
 ## Targets
 
-The primary Admiral library and CLI surfaces support native and JavaScript targets and prefer JavaScript. The filesystem-based `util/target-file-discovery` subpackage remains native-only because `moonbitlang/async/fs` does not provide a JavaScript implementation.
+The primary Admiral library and CLI surfaces support native and JavaScript targets and prefer JavaScript. The filesystem-based `util/target-file-discovery` subpackage additionally supports Wasm through [`mizchi/x`](https://github.com/mizchi/x), which delegates to `moonbitlang/async/fs` on native and Wasm and provides a Node.js implementation on JavaScript.
 
 ## License
 

@@ -53,8 +53,7 @@ async fn main {
         examples=[
           "myapp greet --name Alice", "myapp greet --name Bob --loud --count 3",
         ],
-        run=Some(async fn(ctx) {
-          @async.sleep(0)
+        run=Some(ctx => {
           let name = ctx.get_string_required(greet_name) catch { _ => return }
           let loud = ctx.get_bool(greet_loud)
           let count = match ctx.get_int(greet_count) {
@@ -86,8 +85,7 @@ async fn main {
                 examples=[
                   "myapp db migrate up", "myapp db migrate up --dry-run", "myapp db migrate up --steps 5",
                 ],
-                run=Some(async fn(ctx) {
-                  @async.sleep(0)
+                run=Some(ctx => {
                   let dry = ctx.get_bool(migrate_dry_run)
                   let steps = ctx.get_int(migrate_up_steps)
                   if dry {
@@ -106,8 +104,7 @@ async fn main {
                 name="down",
                 description="Rollback migrations",
                 options=[migrate_down_steps],
-                run=Some(async fn(ctx) {
-                  @async.sleep(0)
+                run=Some(ctx => {
                   let steps = match ctx.get_int(migrate_down_steps) {
                     Some(n) => n
                     None => 1
@@ -124,8 +121,7 @@ async fn main {
             name="seed",
             description="Seed the database",
             options=[seed_file],
-            run=Some(async fn(ctx) {
-              @async.sleep(0)
+            run=Some(ctx => {
               let file = match ctx.get_string(seed_file) {
                 Some(f) => f
                 None => "seeds/default.sql"
@@ -139,8 +135,7 @@ async fn main {
         name="inspect",
         description="Inspect typed positional values",
         positionals=[inspect_value, inspect_labels],
-        run=Some(async fn(ctx) {
-          @async.sleep(0)
+        run=Some(ctx => {
           let value = ctx.get_int_required(inspect_value) catch { _ => return }
           let labels = ctx.get_strings(inspect_labels)
           println("value=" + value.to_string())

@@ -1,6 +1,6 @@
 name = "totto2727/admiral"
 
-version = "0.6.3"
+version = "0.6.4"
 
 readme = "README.mbt.md"
 
@@ -17,10 +17,11 @@ import {
   "moonbitlang/x@0.4.47",
   "mizchi/tui@0.10.0",
   "totto2727/lens@0.4.0",
+  "mizchi/x@0.5.2",
 }
 
 preferred_target = "js"
 
-supported_targets = "js+native"
+supported_targets = "js+native+wasm"
 
 source = "src"
