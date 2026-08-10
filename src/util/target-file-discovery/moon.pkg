@@ -7,4 +7,4 @@ import {
   "mizchi/x/fs",
 }
 
-supported_targets = "js+native"
+supported_targets = "js+native+wasm"

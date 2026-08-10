@@ -22,6 +22,6 @@ import {
 
 preferred_target = "js"
 
-supported_targets = "js+native"
+supported_targets = "js+native+wasm"
 
 source = "src"
