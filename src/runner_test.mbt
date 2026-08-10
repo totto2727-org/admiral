@@ -1,5 +1,5 @@
 ///|
-async test "cli creates CliApp and run executes async command" {
+async test "cli creates CliApp and run executes command" {
   let called = Ref(false)
   let captured_name = Ref("")
   let name = string("name", short='n', description="Name", required=true)
@@ -12,8 +12,7 @@ async test "cli creates CliApp and run executes async command" {
         name="greet",
         description="Greet someone",
         options=[name],
-        run=Some(async fn(ctx) {
-          @async.sleep(0)
+        run=Some(ctx => {
           called.val = true
           captured_name.val = ctx.get_string_required(name) catch {
             _ => "error"
