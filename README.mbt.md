@@ -20,13 +20,13 @@ Add to `moon.mod`:
 
 ```moonbit
 import {
-  "totto2727/admiral@0.6.3",
+  "totto2727/admiral@0.6.4",
   "moonbitlang/async@0.20.3",
 }
 
 preferred_target = "js"
 
-supported_targets = "js+native"
+supported_targets = "js+native+wasm"
 ```
 
 Add to `moon.pkg`:
