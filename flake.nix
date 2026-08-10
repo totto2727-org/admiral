@@ -29,7 +29,10 @@
         in
         {
           default = pkgs.mkShell {
-            packages = [ pkgs.moonbit-bin.moonbit.latest ];
+            packages = [
+              pkgs.moonbit-bin.moonbit.latest
+              pkgs.nodejs_24
+            ];
           };
         }
       );
