@@ -32,6 +32,9 @@ fn[T] option_def(
 }
 
 ///|
+/// Defines a scalar string option. Set `required` when the command must receive
+/// a value and `default` when a fallback should be used. `env` and `config`
+/// select independent environment and configuration keys.
 pub fn string(
   name : String,
   short? : Char = '\u0000',
@@ -57,6 +60,8 @@ pub fn string(
 }
 
 ///|
+/// Defines a repeated string option. Values are returned by
+/// `Context::get_strings`; configuration values must be JSON arrays.
 pub fn strings(
   name : String,
   short? : Char = '\u0000',
@@ -81,6 +86,8 @@ pub fn strings(
 }
 
 ///|
+/// Defines a boolean flag. An omitted flag resolves to `false`; environment
+/// values use the boolean literals accepted by `core/argparse`.
 pub fn bool(
   name : String,
   short? : Char = '\u0000',
@@ -104,6 +111,8 @@ pub fn bool(
 }
 
 ///|
+/// Defines a scalar signed integer option with optional defaults and required
+/// validation.
 pub fn int(
   name : String,
   short? : Char = '\u0000',
@@ -129,6 +138,8 @@ pub fn int(
 }
 
 ///|
+/// Defines a repeated signed integer option. Use `Context::get_ints` to read
+/// all values after parsing.
 pub fn ints(
   name : String,
   short? : Char = '\u0000',
@@ -153,6 +164,7 @@ pub fn ints(
 }
 
 ///|
+/// Defines a scalar 64-bit signed integer option.
 pub fn int64(
   name : String,
   short? : Char = '\u0000',
@@ -178,6 +190,7 @@ pub fn int64(
 }
 
 ///|
+/// Defines a repeated 64-bit signed integer option.
 pub fn int64s(
   name : String,
   short? : Char = '\u0000',
@@ -202,6 +215,7 @@ pub fn int64s(
 }
 
 ///|
+/// Defines a scalar unsigned integer option.
 pub fn uint(
   name : String,
   short? : Char = '\u0000',
@@ -227,6 +241,7 @@ pub fn uint(
 }
 
 ///|
+/// Defines a repeated unsigned integer option.
 pub fn uints(
   name : String,
   short? : Char = '\u0000',
@@ -251,6 +266,7 @@ pub fn uints(
 }
 
 ///|
+/// Defines a scalar 64-bit unsigned integer option.
 pub fn uint64(
   name : String,
   short? : Char = '\u0000',
@@ -276,6 +292,7 @@ pub fn uint64(
 }
 
 ///|
+/// Defines a repeated 64-bit unsigned integer option.
 pub fn uint64s(
   name : String,
   short? : Char = '\u0000',
@@ -300,6 +317,7 @@ pub fn uint64s(
 }
 
 ///|
+/// Defines a scalar double-precision floating-point option.
 pub fn double(
   name : String,
   short? : Char = '\u0000',
@@ -325,6 +343,7 @@ pub fn double(
 }
 
 ///|
+/// Defines a repeated double-precision floating-point option.
 pub fn doubles(
   name : String,
   short? : Char = '\u0000',

@@ -32,6 +32,9 @@ fn should_use_config(source : @argparse.ValueSource?) -> Bool {
 }
 
 ///|
+/// Returns the first string value from an option or positional definition, or
+/// `None` when the argument is absent. Configuration JSON is decoded when the
+/// parser source is a default or is missing.
 pub fn[Metadata] Context::get_string(
   self : Context,
   argument : ArgDef[String, Metadata],
@@ -58,6 +61,7 @@ pub fn[Metadata] Context::get_string(
 }
 
 ///|
+/// Returns the required string value, raising when `argument` is absent.
 pub fn[Metadata] Context::get_string_required(
   self : Context,
   argument : ArgDef[String, Metadata],
@@ -69,6 +73,7 @@ pub fn[Metadata] Context::get_string_required(
 }
 
 ///|
+/// Parses and returns the first signed integer value, or `None` when absent.
 pub fn[Metadata] Context::get_int(
   self : Context,
   argument : ArgDef[Int, Metadata],
@@ -95,6 +100,7 @@ pub fn[Metadata] Context::get_int(
 }
 
 ///|
+/// Returns the required signed integer value, raising when it is absent.
 pub fn[Metadata] Context::get_int_required(
   self : Context,
   argument : ArgDef[Int, Metadata],
@@ -106,6 +112,8 @@ pub fn[Metadata] Context::get_int_required(
 }
 
 ///|
+/// Parses and returns the first 64-bit signed integer value, or `None` when
+/// absent.
 pub fn[Metadata] Context::get_int64(
   self : Context,
   argument : ArgDef[Int64, Metadata],
@@ -132,6 +140,7 @@ pub fn[Metadata] Context::get_int64(
 }
 
 ///|
+/// Returns the required 64-bit signed integer value.
 pub fn[Metadata] Context::get_int64_required(
   self : Context,
   argument : ArgDef[Int64, Metadata],
@@ -143,6 +152,7 @@ pub fn[Metadata] Context::get_int64_required(
 }
 
 ///|
+/// Parses and returns the first unsigned integer value, or `None` when absent.
 pub fn[Metadata] Context::get_uint(
   self : Context,
   argument : ArgDef[UInt, Metadata],
@@ -169,6 +179,7 @@ pub fn[Metadata] Context::get_uint(
 }
 
 ///|
+/// Returns the required unsigned integer value.
 pub fn[Metadata] Context::get_uint_required(
   self : Context,
   argument : ArgDef[UInt, Metadata],
@@ -180,6 +191,8 @@ pub fn[Metadata] Context::get_uint_required(
 }
 
 ///|
+/// Parses and returns the first 64-bit unsigned integer value, or `None` when
+/// absent.
 pub fn[Metadata] Context::get_uint64(
   self : Context,
   argument : ArgDef[UInt64, Metadata],
@@ -206,6 +219,7 @@ pub fn[Metadata] Context::get_uint64(
 }
 
 ///|
+/// Returns the required 64-bit unsigned integer value.
 pub fn[Metadata] Context::get_uint64_required(
   self : Context,
   argument : ArgDef[UInt64, Metadata],
@@ -217,6 +231,7 @@ pub fn[Metadata] Context::get_uint64_required(
 }
 
 ///|
+/// Parses and returns the first double value, or `None` when absent.
 pub fn[Metadata] Context::get_double(
   self : Context,
   argument : ArgDef[Double, Metadata],
@@ -243,6 +258,7 @@ pub fn[Metadata] Context::get_double(
 }
 
 ///|
+/// Returns the required double value.
 pub fn[Metadata] Context::get_double_required(
   self : Context,
   argument : ArgDef[Double, Metadata],
@@ -254,6 +270,7 @@ pub fn[Metadata] Context::get_double_required(
 }
 
 ///|
+/// Returns the selected subcommand name and its nested context, when present.
 pub fn Context::get_subcommand(self : Context) -> (String, Context)? {
   self.subcommand
 }

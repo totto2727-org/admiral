@@ -2,21 +2,77 @@
 
 Declarative CLI builder for MoonBit, inspired by [gunshi](https://github.com/kazupon/gunshi).
 
-This package is a fork of [mizchi/admiral](https://github.com/mizchi/admiral). It preserves the upstream MIT license and adds async-first command execution and help fallback behavior.
+This package is a fork of [mizchi/admiral](https://github.com/mizchi/admiral). It preserves the upstream MIT license and adds async-first command execution and help fallback behavior to its cross-target `moonbitlang/core/argparse` wrapper.
 
-A cross-target wrapper around `moonbitlang/core/argparse` that provides:
+This document is canonical `README.mbt.md`; maintain `README.md` as the relative symlink `README.md -> README.mbt.md`.
 
-- Typed option helpers (`string`, `bool`, `int`, `int64`, `uint`, `uint64`, `double`, `positional`)
-- Optional configuration loading through independent config keys
-- Async `run` callbacks for commands and nested subcommands
-- TTY-gated interactive input callbacks with typed value overrides
-- Structured JSON schema output for AI agent integration
-- Shell completion generation (bash, zsh, fish)
-- Auto-generated `--help` / `--version`, including help for incomplete command paths
+## Usage
 
-## Install
+```moonbit
+async fn main {
+  let name = @admiral.string(
+    "name",
+    short='n',
+    description="Name to greet",
+    env="ADMIRAL_NAME",
+    required=true,
+  )
+  let verbose = @admiral.bool("verbose", short='v', description="Verbose output")
+  let count = @admiral.int("count", short='c', description="Repeat count", default=Some(1))
+  let app = @admiral.CliApp::CliApp(
+    name="myapp",
+    version="1.0.0",
+    description="My CLI tool",
+    commands=[
+      @admiral.CommandDef::CommandDef(
+        name="greet",
+        description="Greet someone",
+        options=[name, verbose, count],
+        run=Some(async fn(ctx) {
+          let name_value = try { ctx.get_string_required(name) } catch { _ => return }
+          let is_verbose = ctx.get_bool(verbose)
+          let count_value = match ctx.get_int(count) { Some(n) => n; None => 1 }
+          for i = 0; i < count_value; i = i + 1 {
+            if is_verbose {
+              println("Hello, " + name_value + "! (" + (i + 1).to_string() + ")")
+            } else {
+              println("Hello, " + name_value + "!")
+            }
+          }
+        }),
+      ),
+    ],
+  )
+  app.run()
+}
+```
 
-Add to `moon.mod`:
+```text
+$ myapp greet --name Alice
+Hello, Alice!
+
+$ myapp greet -n Bob -v -c 3
+Hello, Bob! (1)
+Hello, Bob! (2)
+Hello, Bob! (3)
+```
+
+## Key features
+
+- Typed scalar and repeated option and positional helpers for strings and numeric values
+- Independent environment and JSON configuration sources with deterministic precedence
+- Async command callbacks, nested subcommands, and TTY-gated interactive input
+- JSON schema output plus Bash, Zsh, and Fish completion generation
+- Automatic `--help` and `--version`, including help for incomplete command paths
+
+## Prerequisites
+
+- **MoonBit**: Install the MoonBit toolchain and enter the pinned Nix development shell when working from source.
+- **Supported targets**: JavaScript, native, and Wasm are enabled by the module; the default preferred target is JavaScript.
+
+## Setup
+
+Add Admiral and its async runtime to `moon.mod`:
 
 ```moonbit
 import {
@@ -38,70 +94,9 @@ import {
 }
 ```
 
-## Quick Start
+## API
 
-```moonbit
-async fn main {
-  let name = @admiral.string(
-    "name",
-    short='n',
-    description="Name to greet",
-    env="ADMIRAL_NAME",
-    config="name",
-    required=true,
-  )
-  let verbose = @admiral.bool("verbose", short='v', description="Verbose output")
-  let count = @admiral.int("count", short='c', description="Repeat count", default=Some(1))
-  let app = @admiral.CliApp::CliApp(
-    name="myapp",
-    version="1.0.0",
-    description="My CLI tool",
-    commands=[
-      @admiral.CommandDef::CommandDef(
-        name="greet",
-        description="Greet someone",
-        options=[name, verbose, count],
-        examples=["myapp greet --name Alice", "myapp greet -n Bob -v -c 3"],
-        run=Some(async fn(ctx) {
-          let name_value = try { ctx.get_string_required(name) } catch { _ => return }
-          let is_verbose = ctx.get_bool(verbose)
-          let count_value = match ctx.get_int(count) { Some(n) => n; None => 1 }
-          for i = 0; i < count_value; i = i + 1 {
-            if is_verbose {
-              println("Hello, " + name_value + "! (" + (i + 1).to_string() + ")")
-            } else {
-              println("Hello, " + name_value + "!")
-            }
-          }
-        }),
-      ),
-    ],
-  )
-  app.run()
-}
-```
-
-```
-$ myapp greet --name Alice
-Hello, Alice!
-
-$ myapp greet -n Bob -v -c 3
-Hello, Bob! (1)
-Hello, Bob! (2)
-Hello, Bob! (3)
-
-$ myapp --help
-Usage: myapp [command]
-
-My CLI tool
-
-Commands:
-  greet  Greet someone
-
-Options:
-  -h, --help     Show help information.
-  -V, --version  Show version information.
-```
+The [Mooncakes Admiral API reference](https://mooncakes.io/docs/totto2727/admiral) is the canonical generated API index. It includes the published signatures and the `///` documentation for every public helper, type, getter, and completion method.
 
 ## Guide
 
@@ -507,95 +502,18 @@ eval "$(myapp completion --shell zsh)"
 myapp completion --shell fish > ~/.config/fish/completions/myapp.fish
 ```
 
-## API Reference
-
-### Option Helpers
-
-| Function                                                                 | Description                                     |
-| ------------------------------------------------------------------------ | ----------------------------------------------- |
-| `string(name, short?, description?, env?, config?, required?, default?)` | String option (`--name value`)                  |
-| `strings(name, short?, description?, env?, config?, required?)`          | Repeated string option                          |
-| `bool(name, short?, description?, env?, config?)`                        | Boolean flag (`--verbose`)                      |
-| `int(name, short?, description?, env?, config?, required?, default?)`    | Integer option (`--port 8080`)                  |
-| `ints(name, short?, description?, env?, config?, required?)`             | Repeated integer option                         |
-| `int64(name, short?, description?, env?, config?, required?, default?)`  | 64-bit signed integer option                    |
-| `int64s(name, short?, description?, env?, config?, required?)`           | Repeated 64-bit signed integer option           |
-| `uint(name, short?, description?, env?, config?, required?, default?)`   | Unsigned integer option                         |
-| `uints(name, short?, description?, env?, config?, required?)`            | Repeated unsigned integer option                |
-| `uint64(name, short?, description?, env?, config?, required?, default?)` | 64-bit unsigned integer option                  |
-| `uint64s(name, short?, description?, env?, config?, required?)`          | Repeated 64-bit unsigned integer option         |
-| `double(name, short?, description?, env?, config?, required?, default?)` | Double-precision floating-point option          |
-| `doubles(name, short?, description?, env?, config?, required?)`          | Repeated double-precision floating-point option |
-
-### Position Helpers
-
-| Function                                                   | Result type                                          |
-| ---------------------------------------------------------- | ---------------------------------------------------- |
-| `position_string(name, description?, config?, required?)`  | `PositionDef[String]`                                |
-| `position_strings(name, description?, config?, required?)` | `PositionDef[Array[String]]`                         |
-| `position_int(name, description?, config?, required?)`     | `PositionDef[Int]`                                   |
-| `position_ints(name, description?, config?, required?)`    | `PositionDef[Array[Int]]`                            |
-| `position_int64` / `position_int64s`                       | `PositionDef[Int64]` / `PositionDef[Array[Int64]]`   |
-| `position_uint` / `position_uints`                         | `PositionDef[UInt]` / `PositionDef[Array[UInt]]`     |
-| `position_uint64` / `position_uint64s`                     | `PositionDef[UInt64]` / `PositionDef[Array[UInt64]]` |
-| `position_double` / `position_doubles`                     | `PositionDef[Double]` / `PositionDef[Array[Double]]` |
-
-### Command Definition
-
-| Function                                                                                            | Description                                                 |
-| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `CommandDef::CommandDef(name, description?, options?, positionals?, examples?, subcommands?, run?)` | Define a command or subcommand with an async `run` callback |
-| `CliApp::CliApp(name, version?, description?, options?, commands?, load_config?)`                   | Create a CLI app with global options                        |
-
-### Context Methods
-
-| Method                                                     | Return                         | Description                                     |
-| ---------------------------------------------------------- | ------------------------------ | ----------------------------------------------- |
-| `get_bool(OptionDef[Bool])`                                | `Bool`                         | Flag value (default: `false`)                   |
-| `get_string(ArgDef[String, M])`                            | `String?`                      | First string value from an option or position   |
-| `get_string_required(ArgDef[String, M])`                   | `String raise`                 | Required string value                           |
-| `get_int(ArgDef[Int, M])`                                  | `Int?`                         | Parsed integer value from an option or position |
-| `get_int_required(ArgDef[Int, M])`                         | `Int raise`                    | Required parsed integer value                   |
-| `get_int64` / `get_int64_required`                         | `Int64?` / `Int64 raise`       | 64-bit signed integer value                     |
-| `get_uint` / `get_uint_required`                           | `UInt?` / `UInt raise`         | Unsigned integer value                          |
-| `get_uint64` / `get_uint64_required`                       | `UInt64?` / `UInt64 raise`     | 64-bit unsigned integer value                   |
-| `get_double` / `get_double_required`                       | `Double?` / `Double raise`     | Double-precision floating-point value           |
-| `get_strings(ArgDef[Array[String], M])`                    | `Array[String]`                | Repeated string values, empty when unavailable  |
-| `get_ints(ArgDef[Array[Int], M])`                          | `Array[Int] raise`             | Repeated parsed integer values                  |
-| `get_int64s` / `get_uints` / `get_uint64s` / `get_doubles` | corresponding `Array[T] raise` | Repeated parsed numeric values                  |
-| plural getter with `_required` suffix                      | `NonEmptyArray[T] raise`       | Required non-empty repeated values              |
-| `get_subcommand()`                                         | `(String, Context)?`           | Selected subcommand name and context            |
-
-### Schema & Completion
-
-| Method                     | Return   | Description                        |
-| -------------------------- | -------- | ---------------------------------- |
-| `render_schema()`          | `String` | Full CLI definition as JSON string |
-| `ToJson::to_json(app)`     | `Json`   | Full CLI definition as Json value  |
-| `render_bash_completion()` | `String` | Bash completion script             |
-| `render_zsh_completion()`  | `String` | Zsh completion script              |
-| `render_fish_completion()` | `String` | Fish completion script             |
-
-### Running
-
-```moonbit
-app.run()                                    // use process args
-app.run(argv=Some(["greet", "--name", "x"])) // explicit args (for testing)
-app.run(env={ "ADMIRAL_NAME": "Env" })       // explicit environment map
-app.run(
-  argv=Some(["greet"]),
-  env={ "ADMIRAL_NAME": "Env" },
-)
-```
-
-`CliApp::run(argv?, env?)` is async. Omitted `argv` uses process arguments, and omitted `env` uses the process environment. Call it from `async fn main` or `async test`; no task-group wrapper is required. `--help` and `--version` are automatically handled by argparse. Invoking the app without a runnable command, or a command group without its required subcommand, displays the corresponding help. Unknown commands, invalid options, and errors raised by command callbacks remain errors.
-
 ## Targets
 
 The primary Admiral library and CLI surfaces support native and JavaScript targets and prefer JavaScript. The filesystem-based `util/target-file-discovery` subpackage additionally supports Wasm through [`mizchi/x`](https://github.com/mizchi/x), which delegates to `moonbitlang/async/fs` on native and Wasm and provides a Node.js implementation on JavaScript.
+
+## Development
+
+For repository structure and development commands, see [AGENTS.md](./AGENTS.md).
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
 
 The upstream project declares its original license as MIT in [mizchi/admiral's module manifest](https://github.com/mizchi/admiral/blob/main/moon.mod.json).
+
+_This README was generated from the [share-artifact skill](https://raw.githubusercontent.com/totto2727-org/agent/refs/heads/main/plugins/totto2727-coding/skills/share-artifact/SKILL.md) and [README template](https://raw.githubusercontent.com/totto2727-org/agent/refs/heads/main/plugins/totto2727-coding/skills/share-artifact/readme/template.md)._

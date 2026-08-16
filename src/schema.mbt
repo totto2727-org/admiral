@@ -287,6 +287,7 @@ let cli_schema_commands_lens : @lens.PresenceLens[Json] = @lens.root()
   .optional()
 
 ///|
+/// Serializes a `CliApp` into the JSON value used by `render_schema`.
 pub impl ToJson for CliApp with fn to_json(self) -> Json {
   let builder = @lens.JsonBuilder::JsonBuilder()
   cli_schema_name_lens.set_or_abort(builder, self.name)
@@ -338,6 +339,8 @@ pub impl ToJson for CliApp with fn to_json(self) -> Json {
 extend CliApp with ToJson::{to_json}
 
 ///|
+/// Renders the complete CLI definition as a JSON string for documentation and
+/// tooling integrations.
 pub fn CliApp::render_schema(self : CliApp) -> String {
   self.to_json().stringify()
 }

@@ -16,6 +16,8 @@ fn[T] position_def(
 }
 
 ///|
+/// Defines a scalar string positional argument. A required position is checked
+/// by the parser unless an interactive callback or configured value supplies it.
 pub fn position_string(
   name : String,
   description? : String = "",
@@ -35,6 +37,8 @@ pub fn position_string(
 }
 
 ///|
+/// Defines a variadic string positional argument. Read all values with
+/// `Context::get_strings`.
 pub fn position_strings(
   name : String,
   description? : String = "",
@@ -54,6 +58,7 @@ pub fn position_strings(
 }
 
 ///|
+/// Defines a scalar signed integer positional argument.
 pub fn position_int(
   name : String,
   description? : String = "",
@@ -65,6 +70,7 @@ pub fn position_int(
 }
 
 ///|
+/// Defines a variadic signed integer positional argument.
 pub fn position_ints(
   name : String,
   description? : String = "",
@@ -76,6 +82,7 @@ pub fn position_ints(
 }
 
 ///|
+/// Defines a scalar 64-bit signed integer positional argument.
 pub fn position_int64(
   name : String,
   description? : String = "",
@@ -95,6 +102,7 @@ pub fn position_int64(
 }
 
 ///|
+/// Defines a variadic 64-bit signed integer positional argument.
 pub fn position_int64s(
   name : String,
   description? : String = "",
@@ -106,6 +114,7 @@ pub fn position_int64s(
 }
 
 ///|
+/// Defines a scalar unsigned integer positional argument.
 pub fn position_uint(
   name : String,
   description? : String = "",
@@ -117,6 +126,7 @@ pub fn position_uint(
 }
 
 ///|
+/// Defines a variadic unsigned integer positional argument.
 pub fn position_uints(
   name : String,
   description? : String = "",
@@ -128,6 +138,7 @@ pub fn position_uints(
 }
 
 ///|
+/// Defines a scalar 64-bit unsigned integer positional argument.
 pub fn position_uint64(
   name : String,
   description? : String = "",
@@ -147,6 +158,7 @@ pub fn position_uint64(
 }
 
 ///|
+/// Defines a variadic 64-bit unsigned integer positional argument.
 pub fn position_uint64s(
   name : String,
   description? : String = "",
@@ -166,6 +178,7 @@ pub fn position_uint64s(
 }
 
 ///|
+/// Defines a scalar double-precision floating-point positional argument.
 pub fn position_double(
   name : String,
   description? : String = "",
@@ -185,6 +198,7 @@ pub fn position_double(
 }
 
 ///|
+/// Defines a variadic double-precision floating-point positional argument.
 pub fn position_doubles(
   name : String,
   description? : String = "",

@@ -1,4 +1,5 @@
 ///|
+/// Returns all string values, or an empty read-only array when absent.
 pub fn[Metadata] Context::get_strings(
   self : Context,
   argument : ArgDef[Array[String], Metadata],
@@ -25,6 +26,7 @@ pub fn[Metadata] Context::get_strings(
 }
 
 ///|
+/// Returns all required string values as a `NonEmptyArray`.
 pub fn[Metadata] Context::get_strings_required(
   self : Context,
   argument : ArgDef[Array[String], Metadata],
@@ -37,6 +39,7 @@ pub fn[Metadata] Context::get_strings_required(
 }
 
 ///|
+/// Parses and returns all signed integer values, or an empty array when absent.
 pub fn[Metadata] Context::get_ints(
   self : Context,
   argument : ArgDef[Array[Int], Metadata],
@@ -66,6 +69,7 @@ pub fn[Metadata] Context::get_ints(
 }
 
 ///|
+/// Returns all required signed integer values as a `NonEmptyArray`.
 pub fn[Metadata] Context::get_ints_required(
   self : Context,
   argument : ArgDef[Array[Int], Metadata],
@@ -78,6 +82,7 @@ pub fn[Metadata] Context::get_ints_required(
 }
 
 ///|
+/// Parses and returns all 64-bit signed integer values.
 pub fn[Metadata] Context::get_int64s(
   self : Context,
   argument : ArgDef[Array[Int64], Metadata],
@@ -107,6 +112,7 @@ pub fn[Metadata] Context::get_int64s(
 }
 
 ///|
+/// Returns all required 64-bit signed integer values as a `NonEmptyArray`.
 pub fn[Metadata] Context::get_int64s_required(
   self : Context,
   argument : ArgDef[Array[Int64], Metadata],
@@ -119,6 +125,7 @@ pub fn[Metadata] Context::get_int64s_required(
 }
 
 ///|
+/// Parses and returns all unsigned integer values.
 pub fn[Metadata] Context::get_uints(
   self : Context,
   argument : ArgDef[Array[UInt], Metadata],
@@ -148,6 +155,7 @@ pub fn[Metadata] Context::get_uints(
 }
 
 ///|
+/// Returns all required unsigned integer values as a `NonEmptyArray`.
 pub fn[Metadata] Context::get_uints_required(
   self : Context,
   argument : ArgDef[Array[UInt], Metadata],
@@ -160,6 +168,7 @@ pub fn[Metadata] Context::get_uints_required(
 }
 
 ///|
+/// Parses and returns all 64-bit unsigned integer values.
 pub fn[Metadata] Context::get_uint64s(
   self : Context,
   argument : ArgDef[Array[UInt64], Metadata],
@@ -189,6 +198,7 @@ pub fn[Metadata] Context::get_uint64s(
 }
 
 ///|
+/// Returns all required 64-bit unsigned integer values as a `NonEmptyArray`.
 pub fn[Metadata] Context::get_uint64s_required(
   self : Context,
   argument : ArgDef[Array[UInt64], Metadata],
@@ -201,6 +211,7 @@ pub fn[Metadata] Context::get_uint64s_required(
 }
 
 ///|
+/// Parses and returns all double values.
 pub fn[Metadata] Context::get_doubles(
   self : Context,
   argument : ArgDef[Array[Double], Metadata],
@@ -230,6 +241,7 @@ pub fn[Metadata] Context::get_doubles(
 }
 
 ///|
+/// Returns all required double values as a `NonEmptyArray`.
 pub fn[Metadata] Context::get_doubles_required(
   self : Context,
   argument : ArgDef[Array[Double], Metadata],
