@@ -174,7 +174,7 @@ app.run(
 app.run(argv=Some(["serve"]), env=Map([]))
 ```
 
-Values resolve in the order `argv > env > default_values`. Environment-backed boolean flags accept `1`, `0`, `true`, `false`, `yes`, `no`, `on`, and `off`.
+Values resolve in the order `argv > env > config > default`. Environment-backed boolean flags accept `1`, `0`, `true`, `false`, `yes`, `no`, `on`, and `off`.
 Precedence is defined by [`moonbitlang/core/argparse`](https://github.com/moonbitlang/core/blob/1332a066d4143511c1b7db58877bc99991f548d6/argparse/command.mbt#L97-L115).
 Boolean literals are handled by its [`bool` environment parser](https://github.com/moonbitlang/core/blob/1332a066d4143511c1b7db58877bc99991f548d6/argparse/parser_values.mbt#L293-L305).
 The default process map comes from [`moonbitlang/core/env`](https://mooncakes.io/docs/moonbitlang/core/env).
@@ -182,11 +182,11 @@ The default process map comes from [`moonbitlang/core/env`](https://mooncakes.io
 The generated schema contains only configured environment-variable names and config keys; it never resolves or embeds runtime values.
 
 Each helper returns a typed, read-only definition such as `OptionDef[String]`, `OptionDef[Bool]`, or `OptionDef[Int]`.
-Pass the same definition to `command` or `cli` and to the matching `Context` getter; this makes the option name a single source of truth and causes mismatched getters to fail at compile time.
+Pass the same definition to `CommandDef::CommandDef` or `CliApp::CliApp` and to the matching `Context` getter; this makes the option name a single source of truth and causes mismatched getters to fail at compile time.
 
 ### Interactive Input
 
-Set `interactive=true` on each option or position that participates in interactive input, then pass one async `interactive` callback to the owning `command` or root `cli`.
+Set `interactive=true` on each option or position that participates in interactive input, then pass one async `interactive` callback to the owning `CommandDef::CommandDef` or root `CliApp::CliApp`.
 Admiral invokes the callback only when at least one registered definition opts in and `mizchi/tui` reports that an input TTY is available.
 On native platforms, `mizchi/tui` treats either TTY-backed standard input or an available controlling terminal (`/dev/tty` or `CONIN$`) as interactive.
 When no input TTY is available, Admiral skips the callback and preserves ordinary parsing and required-value validation.
@@ -230,11 +230,11 @@ Required interactive definitions are deferred until the callback only in an inte
 
 The callback owns the entire interaction rather than a single component.
 It can perform asynchronous discovery, maintain search state, run multiple screens, or mount a complete [`mizchi/tui`](https://github.com/mizchi/tui.mbt) event loop.
-See [`src/examples/interactive`](examples/interactive) for a native searchable project selector based on the official `mizchi/tui` virtual DOM, keyboard input, and terminal APIs.
+See the [interactive example](https://github.com/totto2727-org/admiral/tree/main/src/examples/interactive) for a native searchable project selector based on the official `mizchi/tui` virtual DOM, keyboard input, and terminal APIs.
 
 ### Configuration
 
-Pass an optional argument-less `load_config` callback to `cli`.
+Pass an optional argument-less `load_config` callback to `CliApp::CliApp`.
 The callback can read any configuration format, but must return a `Map[String, Json]` whose keys match the independent `config` names declared on options or positions:
 
 ```moonbit nocheck
@@ -276,7 +276,7 @@ For example, a loader can report `raise @admiral.ConfigLoadFailure("config file 
 
 `CliApp` is a public record.
 Direct struct-literal callers must include `interactive` and `load_config` in `CliApp`; direct `CommandDef` literals must include `interactive`; and direct `Context` literals must include `sources`, `config`, `interactive_flags`, and `interactive_values`.
-Calls through `cli`, `command`, and `Context::Context` remain source-compatible because the new inputs are optional or initialized internally.
+Calls through `CommandDef::CommandDef`, `CliApp::CliApp`, and `Context::Context` remain source-compatible because the new inputs are optional or initialized internally.
 
 ### Reading Values from Context
 
@@ -299,7 +299,7 @@ run=Some(async fn(ctx) {
   // String (required) — raises if missing
   let name_value = try { ctx.get_string_required(name) } catch { _ => return }
 
-  // Int — parses string value to Int, returns None if missing or invalid
+  // Int — parses string value to Int, returns None if missing; parse failures raise
   let port_value = ctx.get_int(port)           // Int?
 
   // Int (required) — raises if missing or not a valid integer
@@ -450,48 +450,24 @@ println(app.render_schema())         // -> JSON string
 let json = ToJson::to_json(app)      // -> Json value
 ```
 
-Example output:
+The observable shape can be checked directly from the rendered string:
 
-```json
-{
-  "name": "myapp",
-  "version": "1.0.0",
-  "description": "My CLI tool",
-  "commands": {
-    "greet": {
-      "description": "Greet someone",
-      "options": {
-        "name": {
-          "type": "string",
-          "description": "Name to greet",
-          "required": true,
-          "short": "n",
-          "env": "ADMIRAL_NAME"
-        },
-        "verbose": { "type": "bool", "description": "Verbose output", "required": false, "short": "v" },
-        "count": { "type": "int", "description": "Repeat count", "required": false, "short": "c", "default": "1" }
-      },
-      "examples": ["myapp greet --name Alice", "myapp greet -n Bob -v -c 3"]
-    },
-    "db": {
-      "description": "Database commands",
-      "commands": {
-        "migrate": {
-          "description": "Run migrations",
-          "commands": {
-            "up": {
-              "description": "Apply pending migrations",
-              "options": {
-                "dry-run": { "type": "bool", "description": "Preview without applying", "required": false },
-                "steps": { "type": "int", "description": "Number of steps", "required": false, "short": "s" }
-              },
-              "examples": ["myapp db migrate up", "myapp db migrate up --dry-run"]
-            }
-          }
-        }
-      }
-    }
-  }
+```mbt check
+///|
+test "README schema output 1 - includes typed metadata and generated examples" {
+  let count = @admiral.int(
+    "count",
+    short='c',
+    description="Repeat count",
+    default=Some(1),
+  )
+  let app = @admiral.CliApp::CliApp(name="myapp", commands=[
+    @admiral.CommandDef::CommandDef(name="greet", options=[count]),
+  ])
+  let schema = app.render_schema()
+  inspect(schema.contains("\"type\":\"int\""), content="true")
+  inspect(schema.contains("\"default\":\"1\""), content="true")
+  inspect(schema.contains("\"examples\":"), content="true")
 }
 ```
 
@@ -554,11 +530,11 @@ The primary Admiral library and CLI surfaces support native and JavaScript targe
 
 ## Development
 
-For repository structure and development commands, see [AGENTS.md](../AGENTS.md).
+For repository structure and development commands, see [AGENTS.md](./AGENTS.md).
 
 ## License
 
-MIT. See [LICENSE](../LICENSE).
+MIT. See [LICENSE](./LICENSE).
 
 The upstream project declares its original license as MIT in [mizchi/admiral's module manifest](https://github.com/mizchi/admiral/blob/main/moon.mod.json).
 
