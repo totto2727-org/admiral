@@ -8,7 +8,8 @@ This package-local document is canonical `README.mbt.md`; maintain the repositor
 
 ## Usage
 
-```moonbit
+```moonbit nocheck
+///|
 async fn main {
   let name = @admiral.string(
     "name",
@@ -17,8 +18,17 @@ async fn main {
     env="ADMIRAL_NAME",
     required=true,
   )
-  let verbose = @admiral.bool("verbose", short='v', description="Verbose output")
-  let count = @admiral.int("count", short='c', description="Repeat count", default=Some(1))
+  let verbose = @admiral.bool(
+    "verbose",
+    short='v',
+    description="Verbose output",
+  )
+  let count = @admiral.int(
+    "count",
+    short='c',
+    description="Repeat count",
+    default=Some(1),
+  )
   let app = @admiral.CliApp::CliApp(
     name="myapp",
     version="1.0.0",
@@ -29,12 +39,17 @@ async fn main {
         description="Greet someone",
         options=[name, verbose, count],
         run=Some(async fn(ctx) {
-          let name_value = try { ctx.get_string_required(name) } catch { _ => return }
+          let name_value = ctx.get_string_required(name) catch { _ => return }
           let is_verbose = ctx.get_bool(verbose)
-          let count_value = match ctx.get_int(count) { Some(n) => n; None => 1 }
+          let count_value = match ctx.get_int(count) {
+            Some(n) => n
+            None => 1
+          }
           for i = 0; i < count_value; i = i + 1 {
             if is_verbose {
-              println("Hello, " + name_value + "! (" + (i + 1).to_string() + ")")
+              println(
+                "Hello, " + name_value + "! (" + (i + 1).to_string() + ")",
+              )
             } else {
               println("Hello, " + name_value + "!")
             }
@@ -84,7 +99,7 @@ test "README option definition 1 - preserves name and environment metadata" {
 
 Add Admiral and its async runtime to `moon.mod`:
 
-```moonbit
+```moonbit nocheck
 import {
   "totto2727/admiral@0.6.4",
   "moonbitlang/async@0.20.3",
@@ -97,9 +112,10 @@ supported_targets = "js+native+wasm"
 
 Add to `moon.pkg`:
 
-```moonbit
+```moonbit nocheck
+///|
 import {
-  "totto2727/admiral" @admiral,
+  "totto2727/admiral",
   "moonbitlang/async",
 }
 ```
@@ -114,7 +130,7 @@ The [Mooncakes Admiral API reference](https://mooncakes.io/docs/totto2727/admira
 
 Options and positions use the same value types and `Context` getters:
 
-```moonbit
+```moonbit nocheck
 // String option: --name value or -n value
 @admiral.string("name", short='n', description="User name", env="MYAPP_NAME", config="name", required=true)
 
@@ -137,7 +153,7 @@ Options and positions use the same value types and `Context` getters:
 
 `string`, `bool`, and `int` accept an optional `env` argument containing the environment variable name:
 
-```moonbit
+```moonbit nocheck
 @admiral.string("name", env="MYAPP_NAME")
 @admiral.bool("verbose", env="MYAPP_VERBOSE")
 @admiral.int("port", env="MYAPP_PORT")
@@ -145,7 +161,7 @@ Options and positions use the same value types and `Context` getters:
 
 `app.run()` reads process arguments and the process environment by default. For tests or embedding, inject either source explicitly:
 
-```moonbit
+```moonbit nocheck
 app.run(
   argv=Some(["serve"]),
   env={
@@ -175,12 +191,15 @@ Admiral invokes the callback only when at least one registered definition opts i
 On native platforms, `mizchi/tui` treats either TTY-backed standard input or an available controlling terminal (`/dev/tty` or `CONIN$`) as interactive.
 When no input TTY is available, Admiral skips the callback and preserves ordinary parsing and required-value validation.
 
-```moonbit
+```moonbit nocheck
+///|
 let project = @admiral.position_string(
   "project",
   required=true,
   interactive=true,
 )
+
+///|
 let query = @admiral.string(
   "query",
   env="ADMIRAL_PROJECT_QUERY",
@@ -188,6 +207,7 @@ let query = @admiral.string(
   interactive=true,
 )
 
+///|
 let app = @admiral.CliApp::CliApp(
   name="project-search",
   positionals=[project],
@@ -217,7 +237,7 @@ See [`src/examples/interactive`](examples/interactive) for a native searchable p
 Pass an optional argument-less `load_config` callback to `cli`.
 The callback can read any configuration format, but must return a `Map[String, Json]` whose keys match the independent `config` names declared on options or positions:
 
-```moonbit
+```moonbit nocheck
 fn load_config() -> Map[String, Json] raise @admiral.ConfigLoadFailure {
   {
     "port": (7000).to_json(),
@@ -262,7 +282,7 @@ Calls through `cli`, `command`, and `Context::Context` remain source-compatible 
 
 Inside an async `run` callback, use `Context` methods to read parsed values:
 
-```moonbit
+```moonbit nocheck
 let verbose = @admiral.bool("verbose")
 let name = @admiral.string("name", required=true)
 let port = @admiral.int("port", required=true)
@@ -294,67 +314,83 @@ run=Some(async fn(ctx) {
 
 Commands can nest arbitrarily deep:
 
-```moonbit
+```moonbit nocheck
+///|
 let dry_run = @admiral.bool("dry-run", description="Preview without applying")
-let up_steps = @admiral.int("steps", short='s', description="Number of steps")
-let down_steps = @admiral.int("steps", short='s', description="Steps to rollback", default=Some(1))
-let seed_file = @admiral.string("file", short='f', description="Seed file", default=Some("seeds/default.sql"))
 
-let app = @admiral.CliApp::CliApp(
-  name="myapp",
-  commands=[
+///|
+let up_steps = @admiral.int("steps", short='s', description="Number of steps")
+
+///|
+let down_steps = @admiral.int(
+  "steps",
+  short='s',
+  description="Steps to rollback",
+  default=Some(1),
+)
+
+///|
+let seed_file = @admiral.string(
+  "file",
+  short='f',
+  description="Seed file",
+  default=Some("seeds/default.sql"),
+)
+
+///|
+let app = @admiral.CliApp::CliApp(name="myapp", commands=[
+  @admiral.CommandDef::CommandDef(name="db", description="Database commands", subcommands=[
     @admiral.CommandDef::CommandDef(
-      name="db",
-      description="Database commands",
+      name="migrate",
+      description="Run migrations",
       subcommands=[
         @admiral.CommandDef::CommandDef(
-          name="migrate",
-          description="Run migrations",
-          subcommands=[
-            @admiral.CommandDef::CommandDef(
-              name="up",
-              description="Apply pending migrations",
-              options=[dry_run, up_steps],
-              examples=[
-                "myapp db migrate up",
-                "myapp db migrate up --dry-run",
-                "myapp db migrate up --steps 5",
-              ],
-              run=Some(async fn(ctx) {
-                if ctx.get_bool(dry_run) {
-                  println("[DRY RUN] Would apply migrations")
-                } else {
-                  match ctx.get_int(up_steps) {
-                    Some(n) => println("Applying " + n.to_string() + " migrations...")
-                    None => println("Applying all pending migrations...")
-                  }
-                }
-              }),
-            ),
-            @admiral.CommandDef::CommandDef(
-              name="down",
-              description="Rollback migrations",
-              options=[down_steps],
-              run=Some(async fn(ctx) {
-                let steps = match ctx.get_int(down_steps) { Some(n) => n; None => 1 }
-                println("Rolling back " + steps.to_string() + " migration(s)...")
-              }),
-            ),
+          name="up",
+          description="Apply pending migrations",
+          options=[dry_run, up_steps],
+          examples=[
+            "myapp db migrate up", "myapp db migrate up --dry-run", "myapp db migrate up --steps 5",
           ],
+          run=Some(async fn(ctx) {
+            if ctx.get_bool(dry_run) {
+              println("[DRY RUN] Would apply migrations")
+            } else {
+              match ctx.get_int(up_steps) {
+                Some(n) =>
+                  println("Applying " + n.to_string() + " migrations...")
+                None => println("Applying all pending migrations...")
+              }
+            }
+          }),
         ),
         @admiral.CommandDef::CommandDef(
-          name="seed",
-          description="Seed the database",
-          options=[seed_file],
+          name="down",
+          description="Rollback migrations",
+          options=[down_steps],
           run=Some(async fn(ctx) {
-            let file = match ctx.get_string(seed_file) { Some(f) => f; None => "seeds/default.sql" }
-            println("Seeding from: " + file)
+            let steps = match ctx.get_int(down_steps) {
+              Some(n) => n
+              None => 1
+            }
+            println("Rolling back " + steps.to_string() + " migration(s)...")
           }),
         ),
       ],
     ),
-  ],
-)
+    @admiral.CommandDef::CommandDef(
+      name="seed",
+      description="Seed the database",
+      options=[seed_file],
+      run=Some(async fn(ctx) {
+        let file = match ctx.get_string(seed_file) {
+          Some(f) => f
+          None => "seeds/default.sql"
+        }
+        println("Seeding from: " + file)
+      }),
+    ),
+  ]),
+])
 ```
 
 ```
@@ -370,7 +406,7 @@ Seeding from: custom.sql
 
 ### Positional Arguments
 
-```moonbit
+```moonbit nocheck
 let files = @admiral.position_strings("files", description="Files to concatenate")
 
 @admiral.CommandDef::CommandDef(
@@ -395,7 +431,7 @@ Reading: c.txt
 
 ### Testing with Explicit argv
 
-```moonbit
+```moonbit nocheck
 // In async tests, pass argv explicitly:
 async test {
   app.run(argv=Some(["greet", "--name", "alice"]))
@@ -409,7 +445,7 @@ app.run()
 
 admiral can output the full CLI definition as JSON — useful for AI agents, documentation generators, and tooling:
 
-```moonbit
+```moonbit nocheck
 println(app.render_schema())         // -> JSON string
 let json = ToJson::to_json(app)      // -> Json value
 ```
@@ -465,7 +501,7 @@ This enables AI agents to understand CLI interfaces without parsing `--help` tex
 
 Generate completion scripts for bash, zsh, and fish:
 
-```moonbit
+```moonbit nocheck
 // Bash
 println(app.render_bash_completion())
 
@@ -478,7 +514,7 @@ println(app.render_fish_completion())
 
 Typical usage — add a `completion` subcommand:
 
-```moonbit
+```moonbit nocheck
 let shell = @admiral.string(
   "shell",
   short='s',
