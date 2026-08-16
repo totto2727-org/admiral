@@ -21,18 +21,18 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 - Run commands from this repository root.
 - Enter the pinned toolchain with `nix develop` before running MoonBit commands.
 - Read the `mbt-coding` skill before changing MoonBit production code and `docs-moonbit` when language-reference details are needed.
-- Keep `README.mbt.md -> src/README.mbt.md` and `README.md -> README.mbt.md` as relative symbolic links; do not create a second README or a `CLAUDE.md` file.
+- Keep the physical root `README.mbt.md` and the relative `README.md -> README.mbt.md` symbolic link; do not create a second README or a `CLAUDE.md` file.
 - Keep public API behavior documented beside its declaration with `///` comments; the Mooncakes page is the canonical generated API index.
 
 ### Standard tasks
 
 - `nix develop --command moon info` — Regenerate package interface information after public API changes.
-- `nix develop --command moon check README.mbt.md` — Type-check the physical module overview.
+- `nix develop --command moon check README.mbt.md` — Type-check the physical module overview; this root overview is check-only because the root has no `moon.pkg`.
 - `nix develop --command moon check src/README.mbt.md` — Type-check the Admiral package README examples.
 - `nix develop --command moon check src/util/target-file-discovery/README.mbt.md` — Type-check the target discovery README examples.
 - `nix develop --command moon check` — Type-check all packages and supported targets.
-- `nix develop --command moon test src/README.mbt.md` — Run the checked Admiral package README examples.
-- `nix develop --command moon test src/util/target-file-discovery/README.mbt.md` — Run the checked target discovery README examples.
+- `nix develop --command moon test src/README.mbt.md` — Run the checked Admiral package README examples in the `src` package.
+- `nix develop --command moon test src/util/target-file-discovery/README.mbt.md` — Run the checked target discovery README examples in its package.
 - `nix develop --command moon test` — Run package, blackbox, whitebox, and documentation tests.
 - `nix develop --command moon package --list` — Confirm the packages included in publication.
 - `nix develop --command nix flake check --all-systems --no-build` — Validate the flake without building its outputs.
@@ -53,8 +53,8 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 
 ### Target policy
 
-- The module supports `js+native+wasm` and prefers JavaScript.
-- The root package uses core argparse and environment APIs; asynchronous callbacks use `moonbitlang/async`.
+- The module metadata supports `js+native+wasm` because the target discovery helper includes Wasm support; JavaScript remains preferred.
+- The published `src` CLI package supports `js+native`; asynchronous callbacks use `moonbitlang/async`.
 
 ### Package ownership
 

@@ -50,7 +50,7 @@ import = [
   "moonbitlang/async@0.20.3",
 ]
 preferred_target = "js"
-supported_targets = "js+native+wasm"
+supported_targets = "js+native"
 ```
 
 Import the package in the consuming package:

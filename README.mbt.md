@@ -39,7 +39,7 @@ import {
 }
 
 preferred_target = "js"
-supported_targets = "js+native+wasm"
+supported_targets = "js+native"
 ```
 
 See the package guides for the complete end-user setup and API examples: [Admiral](src/README.mbt.md) and [target-file-discovery](src/util/target-file-discovery/README.mbt.md).
