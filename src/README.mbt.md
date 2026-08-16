@@ -57,6 +57,16 @@ Hello, Bob! (2)
 Hello, Bob! (3)
 ```
 
+```mbt check
+///|
+test "README option definition 1 - preserves name and environment metadata" {
+  let name = string("name", env="ADMIRAL_NAME", required=true)
+  inspect(name.name, content="name")
+  debug_inspect(name.metadata.env, content="Some(\"ADMIRAL_NAME\")")
+  inspect(name.metadata.required, content="true")
+}
+```
+
 ## Key features
 
 - Typed scalar and repeated option and positional helpers for strings and numeric values
