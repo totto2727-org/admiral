@@ -4,9 +4,10 @@
 
 ```text
 src/*.mbt                         Public Admiral implementation and tests
+src/README.mbt.md                 Package-local canonical literate README and checked examples
 src/examples/                     End-user CLI and interactive examples
 src/util/target-file-discovery/   Filesystem target-file helper package
-README.mbt.md                     Canonical literate README and checked examples
+README.mbt.md                     Relative symbolic link to src/README.mbt.md
 README.md                         Relative symbolic link to README.mbt.md
 moon.mod                          Mooncakes module metadata and target policy
 flake.nix                         Reproducible MoonBit and Node.js development shell
@@ -20,7 +21,7 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 - Run commands from this repository root.
 - Enter the pinned toolchain with `nix develop` before running MoonBit commands.
 - Read the `mbt-coding` skill before changing MoonBit production code and `docs-moonbit` when language-reference details are needed.
-- Keep `README.md -> README.mbt.md` as a relative symbolic link; do not create a second README or a `CLAUDE.md` file.
+- Keep `README.mbt.md -> src/README.mbt.md` and `README.md -> README.mbt.md` as relative symbolic links; do not create a second README or a `CLAUDE.md` file.
 - Keep public API behavior documented beside its declaration with `///` comments; the Mooncakes page is the canonical generated API index.
 
 ### Standard tasks
@@ -61,7 +62,7 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 ## Package-specific rules
 
 - Use the registry-first API policy: link README users to [Mooncakes Admiral API docs](https://mooncakes.io/docs/totto2727/admiral), and keep behavior, constraints, and representative examples in `///` docs or `src/examples/`.
-- Preserve `README.mbt.md` as the canonical end-user document, retain its provenance footer, and keep `README.md` symlinked to it.
+- Preserve `src/README.mbt.md` as the canonical end-user document, retain its provenance footer, and keep the root README links relative.
 - Keep publication metadata in `moon.mod` synchronized with the latest release; run the full standard task set before a release.
 - Do not broaden this standalone package with unrelated monorepo or upstream-fork changes.
 
