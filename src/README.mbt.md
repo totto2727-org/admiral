@@ -2,8 +2,6 @@
 
 Admiral is the public MoonBit package for declaring typed command-line interfaces with options, positions, nested commands, configuration, completion, and asynchronous execution.
 
-This package README is the detailed guide for the `src` package; the module overview is kept in the repository-root [README.mbt.md](../README.mbt.md).
-
 ## Usage
 
 The smallest command defines an option, attaches it to a command, and reads the typed value in its callback:
@@ -37,7 +35,7 @@ async test "README package usage 1 - runs a typed greeting command" {
 
 ## Prerequisites
 
-- **MoonBit**: Use a current MoonBit toolchain; the repository flake pins the development version.
+- **MoonBit**: Use a current MoonBit toolchain.
 - **Targets**: The package supports JavaScript and native targets.
 
 ## Setup
@@ -139,7 +137,7 @@ test "README package schema 1 - exposes an option name" {
 
 ## Development
 
-For repository structure, package ownership, and executable development commands, see [AGENTS.md](../AGENTS.md).
+For development guidance, see [AGENTS.md](../AGENTS.md).
 
 ## License
 

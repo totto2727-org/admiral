@@ -2,8 +2,6 @@
 
 `target-file-discovery` provides asynchronous helpers for locating named files in a home directory, an ancestor directory, or a recursive tree.
 
-This document is the package-specific guide; the repository-root [README.mbt.md](../../../README.mbt.md) describes the module that contains this helper.
-
 ## Usage
 
 Use `find_home_target_file` when the target must be directly below a known directory:
@@ -29,7 +27,7 @@ async test "README target discovery 1 - finds a home-level target" {
 
 ## Prerequisites
 
-- **MoonBit**: Install the MoonBit toolchain; the parent repository provides a pinned Nix development shell.
+- **MoonBit**: Install the MoonBit toolchain.
 - **Filesystem access**: The calling process must be able to read the directories it searches.
 
 ## Setup
@@ -62,7 +60,7 @@ let target_files = collect_recursive_target_files(".", "moon.pkg")
 
 ## Development
 
-For package ownership and executable development commands, see the repository [AGENTS.md](../../../AGENTS.md).
+For development guidance, see [AGENTS.md](../../../AGENTS.md).
 
 ## License
 

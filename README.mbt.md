@@ -2,8 +2,6 @@
 
 Admiral is an async-first declarative CLI module for MoonBit applications that need typed arguments, configuration, interactive input, schema output, and shell completion.
 
-This document is the canonical module overview; the repository-root `README.md` is its relative symlink.
-
 ## Usage
 
 Install the module and import the public CLI package:
@@ -15,17 +13,17 @@ import {
 }
 ```
 
-The public CLI package provides the detailed [Admiral package guide](src/README.mbt.md), while the filesystem helper is documented in the [target-file-discovery guide](src/util/target-file-discovery/README.mbt.md).
+See the detailed [Admiral guide](src/README.mbt.md) and [target-file-discovery guide](src/util/target-file-discovery/README.mbt.md) for package-specific examples.
 
 ## Key features
 
-- `src`: Typed declarative CLI definitions, async command execution, configuration, interactive input, schema rendering, and completion.
-- `src/util/target-file-discovery`: Cross-target asynchronous discovery of named files with inherited `.gitignore` rules.
+- Typed declarative CLI definitions, async command execution, configuration, interactive input, schema rendering, and completion.
+- Cross-target asynchronous discovery of named files with inherited `.gitignore` rules.
 - JavaScript, native, and Wasm module targets, with JavaScript as the preferred target.
 
 ## Prerequisites
 
-- **MoonBit**: Install the MoonBit toolchain; the repository flake provides the pinned development environment.
+- **MoonBit**: Install the MoonBit toolchain.
 - **Supported targets**: Use JavaScript, native, or Wasm according to the consuming application.
 
 ## Setup
@@ -50,7 +48,7 @@ The [Mooncakes Admiral API reference](https://mooncakes.io/docs/totto2727/admira
 
 ## Development
 
-For repository structure, package ownership, and executable development commands, see [AGENTS.md](AGENTS.md).
+For development guidance, see [AGENTS.md](AGENTS.md).
 
 ## License
 
