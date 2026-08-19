@@ -16,7 +16,7 @@ preferred_target = "js"
 supported_targets = "js+native+wasm"
 ```
 
-See the detailed [Admiral guide](src/README.mbt.md) and [target-file-discovery guide](src/util/target-file-discovery/README.mbt.md) for package-specific examples.
+The checked [Admiral Usage example](src/README.mbt.md#usage) runs `greet --name Alice` and verifies that the callback receives `Alice`. The checked [target-file-discovery Usage example](src/util/target-file-discovery/README.mbt.md#usage) creates a temporary `project.toml` and verifies that home-level discovery returns its exact path.
 
 ## Key features
 
