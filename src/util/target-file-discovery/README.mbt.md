@@ -12,7 +12,10 @@ async test "README target discovery 1 - finds a home-level target" {
   let root = @fs.tmpdir(prefix="admiral-readme-home-")
   let path = @path.Path::join(root, "project.toml").to_string()
   @fs.write_file(path, "demo", create_mode=CreateOrTruncate)
-  inspect(find_home_target_file(root, "project.toml"), content=path)
+  inspect(
+    @target-file-discovery.find_home_target_file(root, "project.toml"),
+    content=path,
+  )
   @fs.rmdir(root, recursive=true)
 }
 ```
@@ -32,11 +35,26 @@ async test "README target discovery 1 - finds a home-level target" {
 
 ## Setup
 
-Import the package from the module that provides Admiral:
+Add Admiral and its async runtime to the consuming module's `moon.mod`:
 
-```toml
+```text
 import {
-  "totto2727/admiral/util/target-file-discovery",
+  "totto2727/admiral@0.6.4",
+  "moonbitlang/async@0.20.3",
+}
+
+preferred_target = "js"
+supported_targets = "js+native+wasm"
+```
+
+Import target-file-discovery with an explicit alias in the consuming package's `moon.pkg`:
+
+```text
+supported_targets = "js+native+wasm"
+
+import {
+  "totto2727/admiral/util/target-file-discovery" @target-file-discovery,
+  "moonbitlang/async",
 }
 ```
 
@@ -55,7 +73,10 @@ import {
 `collect_recursive_target_files(start_dir, file_name)` returns a deterministic read-only array of matching descendant paths after applying inherited `.gitignore` rules.
 
 ```text
-let target_files = collect_recursive_target_files(".", "moon.pkg")
+let target_files = @target-file-discovery.collect_recursive_target_files(
+  ".",
+  "moon.pkg",
+)
 ```
 
 ## Development

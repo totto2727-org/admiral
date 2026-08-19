@@ -9,10 +9,10 @@ The smallest command defines an option, attaches it to a command, and reads the 
 ```mbt check
 ///|
 async test "README package usage 1 - runs a typed greeting command" {
-  let name = string("name", short='n', required=true)
+  let name = @admiral.string("name", short='n', required=true)
   let captured = Ref("")
-  let app = CliApp::CliApp(name="greeter", commands=[
-    CommandDef::CommandDef(
+  let app = @admiral.CliApp::CliApp(name="greeter", commands=[
+    @admiral.CommandDef::CommandDef(
       name="greet",
       options=[name],
       run=Some(ctx => {
@@ -40,21 +40,26 @@ async test "README package usage 1 - runs a typed greeting command" {
 
 ## Setup
 
-Add Admiral and its async runtime to the consuming module:
+Add Admiral and its async runtime to the consuming module's `moon.mod`:
 
-```toml
-import = [
+```text
+import {
   "totto2727/admiral@0.6.4",
   "moonbitlang/async@0.20.3",
-]
+}
+
 preferred_target = "js"
-supported_targets = "js+native"
 ```
 
-Import the package in the consuming package:
+Import Admiral with an explicit alias in the consuming package's `moon.pkg`. The CLI package supports JavaScript and native targets:
 
-```toml
-import = ["totto2727/admiral", "moonbitlang/async"]
+```text
+supported_targets = "js+native"
+
+import {
+  "totto2727/admiral" @admiral,
+  "moonbitlang/async",
+}
 ```
 
 ## API
@@ -70,14 +75,14 @@ Pass the same definition to `CommandDef::CommandDef` or `CliApp::CliApp` and to 
 ```mbt check
 ///|
 test "README package definitions 1 - preserve option metadata" {
-  let name = string(
+  let name = @admiral.string(
     "name",
     short='n',
     env="MYAPP_NAME",
     config="name",
     required=true,
   )
-  let file = position_string("file", config="input", required=true)
+  let file = @admiral.position_string("file", config="input", required=true)
   inspect(name.name, content="name")
   debug_inspect(name.metadata.env, content="Some(\"MYAPP_NAME\")")
   inspect(file.name, content="file")
@@ -99,10 +104,10 @@ Provide `load_config` when configuration must come from a file or another source
 ```mbt check
 ///|
 async test "README package environment 1 - reads an injected environment" {
-  let port = int("port", env="MYAPP_PORT")
+  let port = @admiral.int("port", env="MYAPP_PORT")
   let captured = Ref(0)
-  let app = CliApp::CliApp(name="server", commands=[
-    CommandDef::CommandDef(
+  let app = @admiral.CliApp::CliApp(name="server", commands=[
+    @admiral.CommandDef::CommandDef(
       name="serve",
       options=[port],
       run=Some(ctx => captured.val = ctx.get_int(port).unwrap_or(0)),
@@ -128,9 +133,9 @@ Set `interactive=true` on definitions and provide one callback on the owning com
 ```mbt check
 ///|
 test "README package schema 1 - exposes an option name" {
-  let option = string("name", description="User name")
-  let app = CliApp::CliApp(name="myapp", options=[option])
-  let schema = ToJson::to_json(app).stringify()
+  let option = @admiral.string("name", description="User name")
+  let app = @admiral.CliApp::CliApp(name="myapp", options=[option])
+  let schema = app.render_schema()
   assert_true(schema.contains("name"))
 }
 ```
