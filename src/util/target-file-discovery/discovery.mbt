@@ -1,4 +1,5 @@
 ///|
+/// Finds a named file directly under `home_dir`, raising when it is absent.
 pub async fn find_home_target_file(
   home_dir : String,
   file_name : String,
@@ -11,6 +12,8 @@ pub async fn find_home_target_file(
 }
 
 ///|
+/// Searches upward from `start_dir` through `top_dir` for a named file.
+/// The search is bounded by `top_dir` and raises when no file is found.
 pub async fn find_parent_target_file(
   file_name : String,
   top_dir : String,
@@ -42,6 +45,8 @@ async fn find_parent_target_file_from(
 }
 
 ///|
+/// Recursively finds matching files below `start_dir`, applying inherited
+/// `.gitignore`-style rules and returning paths in deterministic order.
 pub async fn collect_recursive_target_files(
   start_dir : String,
   file_name : String,

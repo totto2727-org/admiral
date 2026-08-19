@@ -168,6 +168,9 @@ fn build_command_with_config(
 }
 
 ///|
+/// Builds a `core/argparse` command from a declarative command definition.
+/// This is useful when an embedding application needs to parse the command
+/// itself instead of running a `CliApp`.
 pub fn build_command(cmd : CommandDef) -> @argparse.Command {
   build_command_with_config(cmd, Map([]))
 }

@@ -1,4 +1,6 @@
 ///|
+/// Constructs a command definition. The same typed option or position value can
+/// be passed to the declaration and later to its matching context getter.
 pub fn CommandDef::CommandDef(
   name~ : String,
   description? : String = "",
@@ -28,6 +30,9 @@ pub fn CommandDef::CommandDef(
 }
 
 ///|
+/// Constructs the root CLI application. `run` handles root arguments, while
+/// `commands` dispatches nested command paths; `load_config` supplies a map of
+/// independent configuration keys.
 pub fn CliApp::CliApp(
   name~ : String,
   version? : String = "0.0.0",

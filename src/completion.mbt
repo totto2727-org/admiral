@@ -80,6 +80,8 @@ fn render_bash_case(sb : StringBuilder, cmd : CommandDef, depth : Int) -> Unit {
 }
 
 ///|
+/// Renders a Bash completion function for the application's commands and
+/// options. Install the returned script in a Bash completion file.
 pub fn CliApp::render_bash_completion(self : CliApp) -> String {
   let sb = StringBuilder::new()
   let fn_name = "_" + self.name.replace(old="-", new="_")
@@ -168,6 +170,8 @@ fn render_zsh_command(
 }
 
 ///|
+/// Renders a Zsh completion function for the application's commands and
+/// options. Install the returned script in a Zsh completion file.
 pub fn CliApp::render_zsh_completion(self : CliApp) -> String {
   let sb = StringBuilder::new()
   sb.write_string("#compdef " + self.name + "\n\n")
@@ -247,6 +251,8 @@ fn render_fish_subcommands(
 }
 
 ///|
+/// Renders Fish completion declarations for the application's commands and
+/// options. Save the returned text under Fish's completions directory.
 pub fn CliApp::render_fish_completion(self : CliApp) -> String {
   let sb = StringBuilder::new()
   sb.write_string("# Fish completions for " + self.name + "\n")
