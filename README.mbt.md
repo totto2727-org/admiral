@@ -4,19 +4,24 @@ Admiral is an async-first declarative CLI module for MoonBit applications that n
 
 ## Usage
 
-Add Admiral and its async runtime to the consuming module's `moon.mod`:
-
-```text
-import {
-  "totto2727/admiral@0.6.4",
-  "moonbitlang/async@0.20.3",
+```mbt check
+///|
+async test "README usage 1 - passes a typed option to the callback" {
+  let name = @admiral.string("name", required=true)
+  let captured = Ref("")
+  let app = @admiral.CliApp::CliApp(
+    name="greeter",
+    options=[name],
+    run=Some(ctx => {
+      captured.val = ctx.get_string_required(name) catch { _ => "missing" }
+    }),
+  )
+  app.run(argv=Some(["--name", "Alice"]))
+  inspect(captured.val, content="Alice")
 }
-
-preferred_target = "js"
-supported_targets = "js+native+wasm"
 ```
 
-The checked [Admiral Usage example](src/README.mbt.md#usage) runs `greet --name Alice` and verifies that the callback receives `Alice`. The checked [target-file-discovery Usage example](src/util/target-file-discovery/README.mbt.md#usage) creates a temporary `project.toml` and verifies that home-level discovery returns its exact path.
+For filesystem discovery, the checked [target-file-discovery Usage example](src/util/target-file-discovery/README.mbt.md#usage) creates a temporary `project.toml` and verifies that home-level discovery returns its exact path.
 
 ## Key features
 
@@ -30,6 +35,18 @@ The checked [Admiral Usage example](src/README.mbt.md#usage) runs `greet --name 
 - **Supported targets**: Use JavaScript, native, or Wasm according to the consuming application.
 
 ## Setup
+
+Add Admiral and its async runtime to the consuming module's `moon.mod`:
+
+```text
+import {
+  "totto2727/admiral@0.6.4",
+  "moonbitlang/async@0.20.3",
+}
+
+preferred_target = "js"
+supported_targets = "js+native+wasm"
+```
 
 Import the CLI package in a consuming package's `moon.pkg`. This package supports JavaScript and native targets:
 
