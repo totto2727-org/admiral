@@ -35,28 +35,7 @@ async test "README target discovery 1 - finds a home-level target" {
 
 ## Setup
 
-Add Admiral and its async runtime to the consuming module's `moon.mod`:
-
-```text
-import {
-  "totto2727/admiral@0.6.4",
-  "moonbitlang/async@0.20.3",
-}
-
-preferred_target = "js"
-supported_targets = "js+native+wasm"
-```
-
-Import target-file-discovery with an explicit alias in the consuming package's `moon.pkg`:
-
-```text
-supported_targets = "js+native+wasm"
-
-import {
-  "totto2727/admiral/util/target-file-discovery" @target-file-discovery,
-  "moonbitlang/async",
-}
-```
+Use the module [Setup](../../../README.mbt.md#setup) for the shared MoonBit dependency and package import declarations; this helper's distinct target constraint is documented in [Prerequisites](#prerequisites).
 
 ## API
 
@@ -78,13 +57,5 @@ let target_files = @target-file-discovery.collect_recursive_target_files(
   "moon.pkg",
 )
 ```
-
-## Development
-
-For development guidance, see [AGENTS.md](../../../AGENTS.md).
-
-## License
-
-MIT. See [LICENSE](../../../LICENSE).
 
 _This README was generated from the [share-artifact skill](https://raw.githubusercontent.com/totto2727-org/agent/refs/heads/main/plugins/totto2727-coding/skills/share-artifact/SKILL.md) and [README template](https://raw.githubusercontent.com/totto2727-org/agent/refs/heads/main/plugins/totto2727-coding/skills/share-artifact/readme/template.md)._

@@ -4,26 +4,7 @@ Admiral is the public MoonBit package for declaring typed command-line interface
 
 ## Usage
 
-The smallest command defines an option, attaches it to a command, and reads the typed value in its callback:
-
-```mbt check
-///|
-async test "README package usage 1 - runs a typed greeting command" {
-  let name = @admiral.string("name", short='n', required=true)
-  let captured = Ref("")
-  let app = @admiral.CliApp::CliApp(name="greeter", commands=[
-    @admiral.CommandDef::CommandDef(
-      name="greet",
-      options=[name],
-      run=Some(ctx => {
-        captured.val = ctx.get_string_required(name) catch { _ => "missing" }
-      }),
-    ),
-  ])
-  app.run(argv=Some(["greet", "--name", "Alice"]))
-  inspect(captured.val, content="Alice")
-}
-```
+For installation and a checked end-to-end typed-option example, see the module [Usage](../README.mbt.md#usage).
 
 ## Key features
 
@@ -40,27 +21,7 @@ async test "README package usage 1 - runs a typed greeting command" {
 
 ## Setup
 
-Add Admiral and its async runtime to the consuming module's `moon.mod`:
-
-```text
-import {
-  "totto2727/admiral@0.6.4",
-  "moonbitlang/async@0.20.3",
-}
-
-preferred_target = "js"
-```
-
-Import Admiral with an explicit alias in the consuming package's `moon.pkg`. The CLI package supports JavaScript and native targets:
-
-```text
-supported_targets = "js+native"
-
-import {
-  "totto2727/admiral" @admiral,
-  "moonbitlang/async",
-}
-```
+Use the module [Setup](../README.mbt.md#setup) for the shared MoonBit dependency and package import declarations; this package's distinct target constraint is documented in [Prerequisites](#prerequisites).
 
 ## API
 
@@ -139,13 +100,5 @@ test "README package schema 1 - exposes an option name" {
   assert_true(schema.contains("name"))
 }
 ```
-
-## Development
-
-For development guidance, see [AGENTS.md](../AGENTS.md).
-
-## License
-
-MIT. See [LICENSE](../LICENSE).
 
 _This README was generated from the [share-artifact skill](https://raw.githubusercontent.com/totto2727-org/agent/refs/heads/main/plugins/totto2727-coding/skills/share-artifact/SKILL.md) and [README template](https://raw.githubusercontent.com/totto2727-org/agent/refs/heads/main/plugins/totto2727-coding/skills/share-artifact/readme/template.md)._
