@@ -70,7 +70,7 @@ import {
 }
 ```
 
-See the package guides for the complete end-user setup and API examples: [Admiral](src/README.mbt.md) and [target-file-discovery](src/util/target-file-discovery/README.mbt.md).
+See the package guides for their distinct APIs: [Admiral](src/README.mbt.md) and [target-file-discovery](src/util/target-file-discovery/README.mbt.md).
 
 ## API
 

@@ -2,13 +2,17 @@
 
 `target-file-discovery` provides asynchronous helpers for locating named files in a home directory, an ancestor directory, or a recursive tree.
 
-## Usage
+The module [README](../../../README.mbt.md) owns installation and the shared usage path. These helpers support native, JavaScript, and Wasm through `mizchi/x`; the calling process must be able to read the searched directories.
 
-Use `find_home_target_file` when the target must be directly below a known directory:
+## API
+
+### `find_home_target_file`
+
+`find_home_target_file(home_dir, file_name)` returns the path when `file_name` exists directly below `home_dir`; it raises when the file is absent.
 
 ```mbt check
 ///|
-async test "README target discovery 1 - finds a home-level target" {
+async test "README target discovery API - finds a home-level target" {
   let root = @fs.tmpdir(prefix="admiral-readme-home-")
   let path = @path.Path::join(root, "project.toml").to_string()
   @fs.write_file(path, "demo", create_mode=CreateOrTruncate)
@@ -19,29 +23,6 @@ async test "README target discovery 1 - finds a home-level target" {
   @fs.rmdir(root, recursive=true)
 }
 ```
-
-## Key features
-
-- Finds a target file directly under a home directory.
-- Searches upward from a start directory without crossing a caller-provided boundary.
-- Recursively collects matching files in deterministic order.
-- Applies inherited `.gitignore`-style rules while traversing descendants.
-- Supports native, JavaScript, and Wasm through `mizchi/x` filesystem APIs.
-
-## Prerequisites
-
-- **MoonBit**: Install the MoonBit toolchain.
-- **Filesystem access**: The calling process must be able to read the directories it searches.
-
-## Setup
-
-Use the module [Setup](../../../README.mbt.md#setup) for the shared MoonBit dependency and package import declarations; this helper's distinct target constraint is documented in [Prerequisites](#prerequisites).
-
-## API
-
-### `find_home_target_file`
-
-`find_home_target_file(home_dir, file_name)` returns the path when `file_name` exists directly below `home_dir`; it raises when the file is absent.
 
 ### `find_parent_target_file`
 

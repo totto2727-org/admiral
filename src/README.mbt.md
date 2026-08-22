@@ -2,26 +2,7 @@
 
 Admiral is the public MoonBit package for declaring typed command-line interfaces with options, positions, nested commands, configuration, completion, and asynchronous execution.
 
-## Usage
-
-For installation and a checked end-to-end typed-option example, see the module [Usage](../README.mbt.md#usage).
-
-## Key features
-
-- Typed scalar and repeated options and positions for strings and numeric values.
-- Independent environment and JSON configuration sources with `argv > env > config > default` precedence.
-- Asynchronous command callbacks, nested subcommands, and TTY-gated interactive input.
-- JSON schema output plus Bash, Zsh, and Fish completion generation.
-- Automatic `--help` and `--version`, including help for incomplete command paths.
-
-## Prerequisites
-
-- **MoonBit**: Use a current MoonBit toolchain.
-- **Targets**: The package supports JavaScript and native targets.
-
-## Setup
-
-Use the module [Setup](../README.mbt.md#setup) for the shared MoonBit dependency and package import declarations; this package's distinct target constraint is documented in [Prerequisites](#prerequisites).
+The module [README](../README.mbt.md) owns installation and the smallest runnable CLI example. This package supports JavaScript and native targets and owns the typed CLI API documented below.
 
 ## API
 
