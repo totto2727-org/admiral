@@ -21,7 +21,7 @@ async test "README usage 1 - passes a typed option to the callback" {
 }
 ```
 
-For filesystem discovery, the checked [target-file-discovery Usage example](src/util/target-file-discovery/README.mbt.md#usage) creates a temporary `project.toml` and verifies that home-level discovery returns its exact path.
+For filesystem discovery, the checked [`find_home_target_file` API example](src/util/target-file-discovery/README.mbt.md#find_home_target_file) creates a temporary `project.toml` and verifies that the helper returns its exact path.
 
 ## Key features
 
