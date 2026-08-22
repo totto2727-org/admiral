@@ -10,8 +10,8 @@ Install the module and import the public CLI package:
 
 ```moonbit
 import {
-  "totto2727/admiral@0.6.4",
-  "moonbitlang/async@0.20.3",
+  "totto2727/admiral@0.6.5",
+  "moonbitlang/async@0.21.0",
 }
 ```
 
@@ -34,8 +34,8 @@ Declare the module in `moon.mod` and import the package in `moon.pkg`:
 
 ```moonbit
 import {
-  "totto2727/admiral@0.6.4",
-  "moonbitlang/async@0.20.3",
+  "totto2727/admiral@0.6.5",
+  "moonbitlang/async@0.21.0",
 }
 
 preferred_target = "js"

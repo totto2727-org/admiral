@@ -46,8 +46,8 @@ Add Admiral and its async runtime to the consuming module:
 
 ```toml
 import = [
-  "totto2727/admiral@0.6.4",
-  "moonbitlang/async@0.20.3",
+  "totto2727/admiral@0.6.5",
+  "moonbitlang/async@0.21.0",
 ]
 preferred_target = "js"
 supported_targets = "js+native"
