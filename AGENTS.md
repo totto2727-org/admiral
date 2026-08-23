@@ -4,6 +4,7 @@
 
 ```text
 src/*.mbt                         Public Admiral implementation and tests
+src/usage_examples.mbt.md         Checked examples linked from the root README
 src/examples/                     End-user CLI and interactive examples
 src/util/target-file-discovery/   Filesystem target-file helper package and README
 README.mbt.md                     Physical canonical module overview
@@ -26,9 +27,10 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 ### Standard tasks
 
 - `nix develop --command moon info` — Regenerate package interface information after public API changes.
-- `nix develop --command moon check README.mbt.md` — Type-check the physical module overview; this root overview is check-only because the root has no `moon.pkg`.
+- `nix develop --command moon check src/usage_examples.mbt.md` — Type-check the executable examples linked from the root README in their owning package.
 - `nix develop --command moon check src/util/target-file-discovery/README.mbt.md` — Type-check the target discovery README examples.
 - `nix develop --command moon check` — Type-check all packages and supported targets.
+- `nix develop --command moon test src/usage_examples.mbt.md` — Run the executable examples linked from the root README in their owning package.
 - `nix develop --command moon test src/util/target-file-discovery/README.mbt.md` — Run the checked target discovery README examples in its package.
 - `nix develop --command moon test` — Run package, blackbox, whitebox, and documentation tests.
 - `nix develop --command moon package --list` — Confirm the packages included in publication.

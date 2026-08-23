@@ -4,41 +4,9 @@ Admiral is an async-first declarative CLI module for MoonBit applications that n
 
 ## Usage
 
-```mbt check
-///|
-async test "README usage 1 - passes a typed option to the callback" {
-  let name = @admiral.string("name", required=true)
-  let captured = Ref("")
-  let app = @admiral.CliApp::CliApp(
-    name="greeter",
-    options=[name],
-    run=Some(ctx => {
-      captured.val = ctx.get_string_required(name) catch { _ => "missing" }
-    }),
-  )
-  app.run(argv=Some(["--name", "Alice"]))
-  inspect(captured.val, content="Alice")
-}
-```
+Build a greeter that passes a required name to its callback. The checked [typed-option example](src/usage_examples.mbt.md#typed-option) verifies that `--name Alice` produces the captured `"Alice"` value.
 
-Use a nested command when it owns an option such as a server port. The selected `serve` command resolves `MYAPP_PORT` before its callback runs:
-
-```mbt check
-///|
-async test "README usage 2 - resolves a nested command option from environment" {
-  let port = @admiral.int("port", env="MYAPP_PORT")
-  let captured = Ref(0)
-  let app = @admiral.CliApp::CliApp(name="server", commands=[
-    @admiral.CommandDef::CommandDef(
-      name="serve",
-      options=[port],
-      run=Some(ctx => captured.val = ctx.get_int(port).unwrap_or(0)),
-    ),
-  ])
-  app.run(argv=Some(["serve"]), env={ "MYAPP_PORT": "8080" })
-  inspect(captured.val, content="8080")
-}
-```
+Use a nested command when it owns an option such as a server port. The checked [nested-command example](src/usage_examples.mbt.md#nested-command-and-environment) verifies that `MYAPP_PORT=8080` reaches the `serve` callback as an `Int`.
 
 For filesystem discovery, the checked [target-file-discovery Usage example](src/util/target-file-discovery/README.mbt.md#usage) creates a temporary `project.toml` and verifies that the helper returns its exact path.
 
@@ -101,22 +69,7 @@ Option and position constructors return typed definitions. The scalar helpers ar
 
 Pass the same definition to `CommandDef::CommandDef` or `CliApp::CliApp` and to the matching `Context` getter so the option name remains one type-checked source of truth.
 
-```mbt check
-///|
-test "README API 1 - preserves option metadata" {
-  let name = @admiral.string(
-    "name",
-    short='n',
-    env="MYAPP_NAME",
-    config="name",
-    required=true,
-  )
-  let file = @admiral.position_string("file", config="input", required=true)
-  inspect(name.name, content="name")
-  debug_inspect(name.metadata.env, content="Some(\"MYAPP_NAME\")")
-  inspect(file.name, content="file")
-}
-```
+The checked [typed-definition example](src/usage_examples.mbt.md#typed-definition) verifies option metadata and a required positional definition.
 
 ### Reading values
 
@@ -142,15 +95,7 @@ Set `interactive=true` on definitions and provide one callback on the owning com
 
 `ToJson::to_json(app)` returns the structured schema, while `render_schema()` returns its string form. `render_bash_completion()`, `render_zsh_completion()`, and `render_fish_completion()` generate shell-specific completion scripts.
 
-```mbt check
-///|
-test "README API 2 - exposes an option name in the schema" {
-  let option = @admiral.string("name", description="User name")
-  let app = @admiral.CliApp::CliApp(name="myapp", options=[option])
-  let schema = app.render_schema()
-  assert_true(schema.contains("name"))
-}
-```
+The checked [schema-rendering example](src/usage_examples.mbt.md#schema-rendering) verifies that an option name appears in the generated schema.
 
 ## Development
 
