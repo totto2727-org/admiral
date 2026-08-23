@@ -4,15 +4,13 @@
 
 The module [README](../../../README.mbt.md) owns installation and the shared usage path. These helpers support native, JavaScript, and Wasm through `mizchi/x`; the calling process must be able to read the searched directories.
 
-## API
+## Usage
 
-### `find_home_target_file`
-
-`find_home_target_file(home_dir, file_name)` returns the path when `file_name` exists directly below `home_dir`; it raises when the file is absent.
+Use `find_home_target_file` when a configuration file must exist directly under a known project directory.
 
 ```mbt check
 ///|
-async test "README target discovery API - finds a home-level target" {
+async test "README target discovery usage 1 - finds a home-level target" {
   let root = @fs.tmpdir(prefix="admiral-readme-home-")
   let path = @path.Path::join(root, "project.toml").to_string()
   @fs.write_file(path, "demo", create_mode=CreateOrTruncate)
@@ -23,6 +21,12 @@ async test "README target discovery API - finds a home-level target" {
   @fs.rmdir(root, recursive=true)
 }
 ```
+
+## API
+
+### `find_home_target_file`
+
+`find_home_target_file(home_dir, file_name)` returns the path when `file_name` exists directly below `home_dir`; it raises when the file is absent.
 
 ### `find_parent_target_file`
 
