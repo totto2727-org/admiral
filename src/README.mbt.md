@@ -2,62 +2,7 @@
 
 Admiral is the public MoonBit package for declaring typed command-line interfaces with options, positions, nested commands, configuration, completion, and asynchronous execution.
 
-This package README is the detailed guide for the `src` package; the module overview is kept in the repository-root [README.mbt.md](../README.mbt.md).
-
-## Usage
-
-The smallest command defines an option, attaches it to a command, and reads the typed value in its callback:
-
-```mbt check
-///|
-async test "README package usage 1 - runs a typed greeting command" {
-  let name = string("name", short='n', required=true)
-  let captured = Ref("")
-  let app = CliApp::CliApp(name="greeter", commands=[
-    CommandDef::CommandDef(
-      name="greet",
-      options=[name],
-      run=Some(ctx => {
-        captured.val = ctx.get_string_required(name) catch { _ => "missing" }
-      }),
-    ),
-  ])
-  app.run(argv=Some(["greet", "--name", "Alice"]))
-  inspect(captured.val, content="Alice")
-}
-```
-
-## Key features
-
-- Typed scalar and repeated options and positions for strings and numeric values.
-- Independent environment and JSON configuration sources with `argv > env > config > default` precedence.
-- Asynchronous command callbacks, nested subcommands, and TTY-gated interactive input.
-- JSON schema output plus Bash, Zsh, and Fish completion generation.
-- Automatic `--help` and `--version`, including help for incomplete command paths.
-
-## Prerequisites
-
-- **MoonBit**: Use a current MoonBit toolchain; the repository flake pins the development version.
-- **Targets**: The package supports JavaScript and native targets.
-
-## Setup
-
-Add Admiral and its async runtime to the consuming module:
-
-```toml
-import = [
-  "totto2727/admiral@0.6.4",
-  "moonbitlang/async@0.20.3",
-]
-preferred_target = "js"
-supported_targets = "js+native"
-```
-
-Import the package in the consuming package:
-
-```toml
-import = ["totto2727/admiral", "moonbitlang/async"]
-```
+The module [README](../README.mbt.md) owns installation and the smallest runnable CLI example. This package supports JavaScript and native targets and owns the typed CLI API documented below.
 
 ## API
 
@@ -72,14 +17,14 @@ Pass the same definition to `CommandDef::CommandDef` or `CliApp::CliApp` and to 
 ```mbt check
 ///|
 test "README package definitions 1 - preserve option metadata" {
-  let name = string(
+  let name = @admiral.string(
     "name",
     short='n',
     env="MYAPP_NAME",
     config="name",
     required=true,
   )
-  let file = position_string("file", config="input", required=true)
+  let file = @admiral.position_string("file", config="input", required=true)
   inspect(name.name, content="name")
   debug_inspect(name.metadata.env, content="Some(\"MYAPP_NAME\")")
   inspect(file.name, content="file")
@@ -101,10 +46,10 @@ Provide `load_config` when configuration must come from a file or another source
 ```mbt check
 ///|
 async test "README package environment 1 - reads an injected environment" {
-  let port = int("port", env="MYAPP_PORT")
+  let port = @admiral.int("port", env="MYAPP_PORT")
   let captured = Ref(0)
-  let app = CliApp::CliApp(name="server", commands=[
-    CommandDef::CommandDef(
+  let app = @admiral.CliApp::CliApp(name="server", commands=[
+    @admiral.CommandDef::CommandDef(
       name="serve",
       options=[port],
       run=Some(ctx => captured.val = ctx.get_int(port).unwrap_or(0)),
@@ -130,19 +75,11 @@ Set `interactive=true` on definitions and provide one callback on the owning com
 ```mbt check
 ///|
 test "README package schema 1 - exposes an option name" {
-  let option = string("name", description="User name")
-  let app = CliApp::CliApp(name="myapp", options=[option])
-  let schema = ToJson::to_json(app).stringify()
+  let option = @admiral.string("name", description="User name")
+  let app = @admiral.CliApp::CliApp(name="myapp", options=[option])
+  let schema = app.render_schema()
   assert_true(schema.contains("name"))
 }
 ```
-
-## Development
-
-For repository structure, package ownership, and executable development commands, see [AGENTS.md](../AGENTS.md).
-
-## License
-
-MIT. See [LICENSE](../LICENSE).
 
 _This README was generated from the [share-artifact skill](https://raw.githubusercontent.com/totto2727-org/agent/refs/heads/main/plugins/totto2727-coding/skills/share-artifact/SKILL.md) and [README template](https://raw.githubusercontent.com/totto2727-org/agent/refs/heads/main/plugins/totto2727-coding/skills/share-artifact/readme/template.md)._
