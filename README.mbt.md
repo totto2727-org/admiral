@@ -21,6 +21,25 @@ async test "README usage 1 - passes a typed option to the callback" {
 }
 ```
 
+Use a nested command when it owns an option such as a server port. The selected `serve` command resolves `MYAPP_PORT` before its callback runs:
+
+```mbt check
+///|
+async test "README usage 2 - resolves a nested command option from environment" {
+  let port = @admiral.int("port", env="MYAPP_PORT")
+  let captured = Ref(0)
+  let app = @admiral.CliApp::CliApp(name="server", commands=[
+    @admiral.CommandDef::CommandDef(
+      name="serve",
+      options=[port],
+      run=Some(ctx => captured.val = ctx.get_int(port).unwrap_or(0)),
+    ),
+  ])
+  app.run(argv=Some(["serve"]), env={ "MYAPP_PORT": "8080" })
+  inspect(captured.val, content="8080")
+}
+```
+
 For filesystem discovery, the checked [target-file-discovery Usage example](src/util/target-file-discovery/README.mbt.md#usage) creates a temporary `project.toml` and verifies that the helper returns its exact path.
 
 ## Key features
@@ -70,11 +89,68 @@ import {
 }
 ```
 
-See the package guides for their distinct APIs: [Admiral](src/README.mbt.md) and [target-file-discovery](src/util/target-file-discovery/README.mbt.md).
+For the distinct filesystem helper API, see [target-file-discovery](src/util/target-file-discovery/README.mbt.md).
 
 ## API
 
-The [Mooncakes Admiral API reference](https://mooncakes.io/docs/totto2727/admiral) is the canonical generated API index for the published CLI package. The [Admiral package guide](src/README.mbt.md) and [target-file-discovery guide](src/util/target-file-discovery/README.mbt.md) explain the representative usage contracts.
+The [Mooncakes Admiral API reference](https://mooncakes.io/docs/totto2727/admiral) is the canonical generated API index for the published CLI package. For the distinct filesystem helper API, see the [target-file-discovery guide](src/util/target-file-discovery/README.mbt.md).
+
+### Defining options and positions
+
+Option and position constructors return typed definitions. The scalar helpers are `string`, `bool`, `int`, `int64`, `uint`, `uint64`, and `double`; each has a repeated form such as `strings` or `doubles`. Position helpers provide the same scalar and repeated numeric families.
+
+Pass the same definition to `CommandDef::CommandDef` or `CliApp::CliApp` and to the matching `Context` getter so the option name remains one type-checked source of truth.
+
+```mbt check
+///|
+test "README API 1 - preserves option metadata" {
+  let name = @admiral.string(
+    "name",
+    short='n',
+    env="MYAPP_NAME",
+    config="name",
+    required=true,
+  )
+  let file = @admiral.position_string("file", config="input", required=true)
+  inspect(name.name, content="name")
+  debug_inspect(name.metadata.env, content="Some(\"MYAPP_NAME\")")
+  inspect(file.name, content="file")
+}
+```
+
+### Reading values
+
+`Context` exposes scalar getters such as `get_bool`, `get_string`, `get_int`, `get_int64`, `get_uint`, `get_uint64`, and `get_double`, plus raising `_required` variants. Repeated values use `get_strings`, `get_ints`, `get_int64s`, `get_uints`, `get_uint64s`, and `get_doubles`; their `_required` variants return `NonEmptyArray` and raise when no value is available.
+
+### Environment and configuration
+
+`CliApp::run` reads process arguments and environment by default, while tests and embedders can inject both sources. Values resolve in the order `argv > env > config > default`.
+
+Environment-backed booleans accept `1`, `0`, `true`, `false`, `yes`, `no`, `on`, and `off`; the parsing and precedence rules come from [`moonbitlang/core/argparse`](https://github.com/moonbitlang/core/blob/1332a066d4143511c1b7db58877bc99991f548d6/argparse/command.mbt#L97-L115).
+
+Provide `load_config` when configuration must come from a file or another source. It returns a `Map[String, Json]`, and its keys are the independent `config` names declared on definitions.
+
+### Nested commands and positions
+
+Commands can contain subcommands and each command owns its options, positions, examples, and callback. `Context::get_subcommand()` returns the selected subcommand name and its nested context when a child command was selected.
+
+### Interactive input
+
+Set `interactive=true` on definitions and provide one callback on the owning command or application. Admiral invokes it only when an opted-in definition is present and a TTY is available. `InteractiveContext::to_context()` exposes initial values, and typed setters replace selected values before the command callback runs.
+
+### Schema and completion
+
+`ToJson::to_json(app)` returns the structured schema, while `render_schema()` returns its string form. `render_bash_completion()`, `render_zsh_completion()`, and `render_fish_completion()` generate shell-specific completion scripts.
+
+```mbt check
+///|
+test "README API 2 - exposes an option name in the schema" {
+  let option = @admiral.string("name", description="User name")
+  let app = @admiral.CliApp::CliApp(name="myapp", options=[option])
+  let schema = app.render_schema()
+  assert_true(schema.contains("name"))
+}
+```
 
 ## Development
 
