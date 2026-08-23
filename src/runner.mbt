@@ -83,6 +83,18 @@ fn matches_to_context(
 }
 
 ///|
+#cfg(target="js")
+fn process_arguments() -> Array[String] {
+  @env.args()[2:].to_owned()
+}
+
+///|
+#cfg(not(target="js"))
+fn process_arguments() -> Array[String] {
+  @env.args()[1:].to_owned()
+}
+
+///|
 fn find_command_def(commands : Array[CommandDef], name : String) -> CommandDef? {
   for cmd in commands {
     if cmd.name == name {
@@ -229,7 +241,7 @@ async fn CliApp::run_with_interactive_environment(
   let argparse_cmd = build_root_command(self, config, interactive_environment~)
   let matches = match argv {
     Some(args) => argparse_cmd.parse(argv=args, env~)
-    None => argparse_cmd.parse(argv=@x_sys.get_cli_args()[1:], env~)
+    None => argparse_cmd.parse(argv=process_arguments(), env~)
   }
   let ctx = matches_to_context(matches, config)
   let root_context = apply_interactive_input(
