@@ -2,7 +2,28 @@
 
 Admiral is the public MoonBit package for declaring typed command-line interfaces with options, positions, nested commands, configuration, completion, and asynchronous execution.
 
-The module [README](../README.mbt.md) owns installation and the smallest runnable CLI example. This package supports JavaScript and native targets and owns the typed CLI API documented below.
+The module [README](../README.mbt.md) owns installation and the baseline typed-option example. This package supports JavaScript and native targets and owns the typed CLI API documented below.
+
+## Usage
+
+Use a nested command when the selected command has its own option set. This example reads a port from the command-specific environment variable and passes the resolved typed value to the callback.
+
+```mbt check
+///|
+async test "README package usage 1 - reads an injected environment value" {
+  let port = @admiral.int("port", env="MYAPP_PORT")
+  let captured = Ref(0)
+  let app = @admiral.CliApp::CliApp(name="server", commands=[
+    @admiral.CommandDef::CommandDef(
+      name="serve",
+      options=[port],
+      run=Some(ctx => captured.val = ctx.get_int(port).unwrap_or(0)),
+    ),
+  ])
+  app.run(argv=Some(["serve"]), env={ "MYAPP_PORT": "8080" })
+  inspect(captured.val, content="8080")
+}
+```
 
 ## API
 
@@ -42,23 +63,6 @@ test "README package definitions 1 - preserve option metadata" {
 Environment-backed booleans accept `1`, `0`, `true`, `false`, `yes`, `no`, `on`, and `off`; the parsing and precedence rules come from [`moonbitlang/core/argparse`](https://github.com/moonbitlang/core/blob/1332a066d4143511c1b7db58877bc99991f548d6/argparse/command.mbt#L97-L115).
 
 Provide `load_config` when configuration must come from a file or another source. It returns a `Map[String, Json]`, and its keys are the independent `config` names declared on definitions.
-
-```mbt check
-///|
-async test "README package environment 1 - reads an injected environment" {
-  let port = @admiral.int("port", env="MYAPP_PORT")
-  let captured = Ref(0)
-  let app = @admiral.CliApp::CliApp(name="server", commands=[
-    @admiral.CommandDef::CommandDef(
-      name="serve",
-      options=[port],
-      run=Some(ctx => captured.val = ctx.get_int(port).unwrap_or(0)),
-    ),
-  ])
-  app.run(argv=Some(["serve"]), env={ "MYAPP_PORT": "8080" })
-  inspect(captured.val, content="8080")
-}
-```
 
 ### Nested commands and positions
 
