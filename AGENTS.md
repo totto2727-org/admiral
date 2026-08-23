@@ -4,7 +4,7 @@
 
 ```text
 src/*.mbt                         Public Admiral implementation and tests
-src/README.mbt.md                 Detailed canonical README for the Admiral package
+src/usage_examples.mbt.md         Checked examples linked from the root README
 src/examples/                     End-user CLI and interactive examples
 src/util/target-file-discovery/   Filesystem target-file helper package and README
 README.mbt.md                     Physical canonical module overview
@@ -27,11 +27,10 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 ### Standard tasks
 
 - `nix develop --command moon info` — Regenerate package interface information after public API changes.
-- `nix develop --command moon check README.mbt.md` — Type-check the physical module overview; this root overview is check-only because the root has no `moon.pkg`.
-- `nix develop --command moon check src/README.mbt.md` — Type-check the Admiral package README examples.
+- `nix develop --command moon check src/usage_examples.mbt.md` — Type-check the executable examples linked from the root README in their owning package.
 - `nix develop --command moon check src/util/target-file-discovery/README.mbt.md` — Type-check the target discovery README examples.
 - `nix develop --command moon check` — Type-check all packages and supported targets.
-- `nix develop --command moon test src/README.mbt.md` — Run the checked Admiral package README examples in the `src` package.
+- `nix develop --command moon test src/usage_examples.mbt.md` — Run the executable examples linked from the root README in their owning package.
 - `nix develop --command moon test src/util/target-file-discovery/README.mbt.md` — Run the checked target discovery README examples in its package.
 - `nix develop --command moon test` — Run package, blackbox, whitebox, and documentation tests.
 - `nix develop --command moon package --list` — Confirm the packages included in publication.
@@ -58,7 +57,7 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 
 ### Package ownership
 
-- `src` owns the published `totto2727/admiral` CLI package and its detailed user guide.
+- `src` owns the published `totto2727/admiral` CLI package; the root README is its sole user guide.
 - `src/util/target-file-discovery` owns the filesystem discovery helpers and their package-specific guide.
 - The repository root owns module metadata, the module overview, examples, and release workflows; it does not duplicate package API guides.
 
@@ -73,7 +72,7 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 
 - Use the registry-first API policy: link README users to [Mooncakes Admiral API docs](https://mooncakes.io/docs/totto2727/admiral), and keep behavior, constraints, and representative examples in `///` docs or `src/examples/`.
 - Preserve the physical root `README.mbt.md` module overview and the relative root `README.md -> README.mbt.md` alias.
-- Keep package-specific details in `src/README.mbt.md` and `src/util/target-file-discovery/README.mbt.md`; do not aggregate module metadata in the `src` guide.
+- Keep the `totto2727/admiral` consumer guide at the root and the separate target-file-discovery package guide in `src/util/target-file-discovery/README.mbt.md`.
 - Keep publication metadata in `moon.mod` synchronized with the latest release; run the full standard task set before a release.
 - Do not broaden this standalone package with unrelated monorepo or upstream-fork changes.
 

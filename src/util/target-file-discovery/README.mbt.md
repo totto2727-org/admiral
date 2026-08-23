@@ -2,43 +2,23 @@
 
 `target-file-discovery` provides asynchronous helpers for locating named files in a home directory, an ancestor directory, or a recursive tree.
 
-This document is the package-specific guide; the repository-root [README.mbt.md](../../../README.mbt.md) describes the module that contains this helper.
+The module [README](../../../README.mbt.md) owns installation and the shared usage path. These helpers support native, JavaScript, and Wasm through `mizchi/x`; the calling process must be able to read the searched directories.
 
 ## Usage
 
-Use `find_home_target_file` when the target must be directly below a known directory:
+Use `find_home_target_file` when a configuration file must exist directly under a known project directory.
 
 ```mbt check
 ///|
-async test "README target discovery 1 - finds a home-level target" {
+async test "README target discovery usage 1 - finds a home-level target" {
   let root = @fs.tmpdir(prefix="admiral-readme-home-")
   let path = @path.Path::join(root, "project.toml").to_string()
   @fs.write_file(path, "demo", create_mode=CreateOrTruncate)
-  inspect(find_home_target_file(root, "project.toml"), content=path)
+  inspect(
+    @target-file-discovery.find_home_target_file(root, "project.toml"),
+    content=path,
+  )
   @fs.rmdir(root, recursive=true)
-}
-```
-
-## Key features
-
-- Finds a target file directly under a home directory.
-- Searches upward from a start directory without crossing a caller-provided boundary.
-- Recursively collects matching files in deterministic order.
-- Applies inherited `.gitignore`-style rules while traversing descendants.
-- Supports native, JavaScript, and Wasm through `mizchi/x` filesystem APIs.
-
-## Prerequisites
-
-- **MoonBit**: Install the MoonBit toolchain; the parent repository provides a pinned Nix development shell.
-- **Filesystem access**: The calling process must be able to read the directories it searches.
-
-## Setup
-
-Import the package from the module that provides Admiral:
-
-```toml
-import {
-  "totto2727/admiral/util/target-file-discovery",
 }
 ```
 
@@ -57,15 +37,10 @@ import {
 `collect_recursive_target_files(start_dir, file_name)` returns a deterministic read-only array of matching descendant paths after applying inherited `.gitignore` rules.
 
 ```text
-let target_files = collect_recursive_target_files(".", "moon.pkg")
+let target_files = @target-file-discovery.collect_recursive_target_files(
+  ".",
+  "moon.pkg",
+)
 ```
-
-## Development
-
-For package ownership and executable development commands, see the repository [AGENTS.md](../../../AGENTS.md).
-
-## License
-
-MIT. See [LICENSE](../../../LICENSE).
 
 _This README was generated from the [share-artifact skill](https://raw.githubusercontent.com/totto2727-org/agent/refs/heads/main/plugins/totto2727-coding/skills/share-artifact/SKILL.md) and [README template](https://raw.githubusercontent.com/totto2727-org/agent/refs/heads/main/plugins/totto2727-coding/skills/share-artifact/readme/template.md)._
