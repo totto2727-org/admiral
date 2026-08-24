@@ -23,14 +23,10 @@ For filesystem discovery, the checked [target-file-discovery Usage example](src/
 
 ## Setup
 
-Admiral is a library, not a standalone executable. Add the published module to the consuming MoonBit project:
-
 ```bash
 moon add totto2727/admiral
 moon add moonbitlang/async
 ```
-
-The first command records the current compatible Admiral version in `moon.mod`; the second makes the async runtime directly available to the application's async entry point. There is no `npx`, `nix run`, or persistent-install path because this module does not publish an end-user command.
 
 Import the CLI package in a consuming package's `moon.pkg`. This package supports JavaScript and native targets:
 
