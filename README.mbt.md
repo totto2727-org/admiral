@@ -23,16 +23,9 @@ For filesystem discovery, the checked [target-file-discovery Usage example](src/
 
 ## Setup
 
-Add Admiral and its async runtime to the consuming module's `moon.mod`:
-
-```text
-import {
-  "totto2727/admiral@0.6.5",
-  "moonbitlang/async@0.21.0",
-}
-
-preferred_target = "js"
-supported_targets = "js+native+wasm"
+```bash
+moon add totto2727/admiral
+moon add moonbitlang/async
 ```
 
 Import the CLI package in a consuming package's `moon.pkg`. This package supports JavaScript and native targets:
@@ -46,7 +39,7 @@ import {
 }
 ```
 
-Import the target-file discovery package instead when the application needs its JavaScript, native, and Wasm-compatible filesystem helpers:
+Import the target-file discovery package from the same module instead when the application needs its JavaScript, native, and Wasm-compatible filesystem helpers:
 
 ```text
 supported_targets = "js+native+wasm"
