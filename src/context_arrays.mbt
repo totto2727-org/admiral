@@ -33,7 +33,7 @@ pub fn[Metadata] Context::get_strings_required(
 ) -> NonEmptyArray[String] raise {
   let all = self.get_strings(argument)
   match all {
-    [first, ..] => { first, rest: all[1:], all }
+    [first, ..] => { first, rest: all[1:], all, }
     [] => fail("missing required argument: " + argument.name)
   }
 }
@@ -42,8 +42,8 @@ pub fn[Metadata] Context::get_strings_required(
 /// Parses and returns all signed integer values, or an empty array when absent.
 pub fn[Metadata] Context::get_ints(
   self : Context,
-  argument : ArgDef[Array[Int], Metadata],
-) -> ReadOnlyArray[Int] raise {
+  argument : ArgDef[Array[Int32], Metadata],
+) -> ReadOnlyArray[Int32] raise {
   match self.interactive_values.get(argument.name) {
     Some(values) =>
       return ReadOnlyArray::from_array(
@@ -72,11 +72,11 @@ pub fn[Metadata] Context::get_ints(
 /// Returns all required signed integer values as a `NonEmptyArray`.
 pub fn[Metadata] Context::get_ints_required(
   self : Context,
-  argument : ArgDef[Array[Int], Metadata],
-) -> NonEmptyArray[Int] raise {
+  argument : ArgDef[Array[Int32], Metadata],
+) -> NonEmptyArray[Int32] raise {
   let all = self.get_ints(argument)
   match all {
-    [first, ..] => { first, rest: all[1:], all }
+    [first, ..] => { first, rest: all[1:], all, }
     [] => fail("missing required argument: " + argument.name)
   }
 }
@@ -119,7 +119,7 @@ pub fn[Metadata] Context::get_int64s_required(
 ) -> NonEmptyArray[Int64] raise {
   let all = self.get_int64s(argument)
   match all {
-    [first, ..] => { first, rest: all[1:], all }
+    [first, ..] => { first, rest: all[1:], all, }
     [] => fail("missing required argument: " + argument.name)
   }
 }
@@ -128,8 +128,8 @@ pub fn[Metadata] Context::get_int64s_required(
 /// Parses and returns all unsigned integer values.
 pub fn[Metadata] Context::get_uints(
   self : Context,
-  argument : ArgDef[Array[UInt], Metadata],
-) -> ReadOnlyArray[UInt] raise {
+  argument : ArgDef[Array[UInt32], Metadata],
+) -> ReadOnlyArray[UInt32] raise {
   match self.interactive_values.get(argument.name) {
     Some(values) =>
       return ReadOnlyArray::from_array(
@@ -158,11 +158,11 @@ pub fn[Metadata] Context::get_uints(
 /// Returns all required unsigned integer values as a `NonEmptyArray`.
 pub fn[Metadata] Context::get_uints_required(
   self : Context,
-  argument : ArgDef[Array[UInt], Metadata],
-) -> NonEmptyArray[UInt] raise {
+  argument : ArgDef[Array[UInt32], Metadata],
+) -> NonEmptyArray[UInt32] raise {
   let all = self.get_uints(argument)
   match all {
-    [first, ..] => { first, rest: all[1:], all }
+    [first, ..] => { first, rest: all[1:], all, }
     [] => fail("missing required argument: " + argument.name)
   }
 }
@@ -205,7 +205,7 @@ pub fn[Metadata] Context::get_uint64s_required(
 ) -> NonEmptyArray[UInt64] raise {
   let all = self.get_uint64s(argument)
   match all {
-    [first, ..] => { first, rest: all[1:], all }
+    [first, ..] => { first, rest: all[1:], all, }
     [] => fail("missing required argument: " + argument.name)
   }
 }
@@ -248,7 +248,7 @@ pub fn[Metadata] Context::get_doubles_required(
 ) -> NonEmptyArray[Double] raise {
   let all = self.get_doubles(argument)
   match all {
-    [first, ..] => { first, rest: all[1:], all }
+    [first, ..] => { first, rest: all[1:], all, }
     [] => fail("missing required argument: " + argument.name)
   }
 }

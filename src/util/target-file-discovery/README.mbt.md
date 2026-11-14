@@ -6,6 +6,10 @@ The module [README](../../../README.mbt.md) owns installation and the shared usa
 
 ## Usage
 
+Run these helpers with `moonbitlang/core/async`, the runtime used by `mizchi/x@0.7.0`.
+Do not run them inside a task group from the separate `moonbitlang/async` module.
+The root README shows the required package imports and experimental-package opt-in.
+
 Use `find_home_target_file` when a configuration file must exist directly under a known project directory.
 
 ```mbt check

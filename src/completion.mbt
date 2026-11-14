@@ -27,7 +27,11 @@ let dollar : String = "$"
 // === Bash ===
 
 ///|
-fn render_bash_case(sb : StringBuilder, cmd : CommandDef, depth : Int) -> Unit {
+fn render_bash_case(
+  sb : StringBuilder,
+  cmd : CommandDef,
+  depth : Int32,
+) -> Unit {
   let indent = "  ".repeat(depth + 1)
   if cmd.subcommands.length() > 0 {
     let word_index = (depth + 2).to_string()
@@ -83,7 +87,7 @@ fn render_bash_case(sb : StringBuilder, cmd : CommandDef, depth : Int) -> Unit {
 /// Renders a Bash completion function for the application's commands and
 /// options. Install the returned script in a Bash completion file.
 pub fn CliApp::render_bash_completion(self : CliApp) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   let fn_name = "_" + self.name.replace(old="-", new="_")
   sb.write_string(fn_name + "() {\n")
   sb.write_string("  local cur prev words cword\n")
@@ -173,7 +177,7 @@ fn render_zsh_command(
 /// Renders a Zsh completion function for the application's commands and
 /// options. Install the returned script in a Zsh completion file.
 pub fn CliApp::render_zsh_completion(self : CliApp) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_string("#compdef " + self.name + "\n\n")
   let fn_name = "_" + self.name.replace(old="-", new="_")
   sb.write_string(fn_name + "() {\n")
@@ -254,7 +258,7 @@ fn render_fish_subcommands(
 /// Renders Fish completion declarations for the application's commands and
 /// options. Save the returned text under Fish's completions directory.
 pub fn CliApp::render_fish_completion(self : CliApp) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_string("# Fish completions for " + self.name + "\n")
   let root_cond = "-n '__fish_use_subcommand'"
   for cmd in self.commands {

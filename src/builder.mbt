@@ -6,7 +6,7 @@ fn has_short(opt : StoredOption) -> Bool {
 ///|
 fn build_option_to_flag(
   opt : StoredOption,
-  global? : Bool = false,
+  global~ : Bool = false,
 ) -> @argparse.FlagArg {
   let metadata = opt.metadata
   let env = metadata.env.map(fn(value) { value[:] })
@@ -27,8 +27,8 @@ fn build_option_to_flag(
 fn build_option_to_option_arg(
   opt : StoredOption,
   config : Map[String, Json],
-  interactive? : Bool = false,
-  global? : Bool = false,
+  interactive~ : Bool = false,
+  global~ : Bool = false,
 ) -> @argparse.OptionArg {
   let metadata = opt.metadata
   let env = metadata.env.map(fn(value) { value[:] })
@@ -103,7 +103,7 @@ fn build_option_to_option_arg(
 fn build_position(
   position : StoredPosition,
   config : Map[String, Json],
-  interactive? : Bool = false,
+  interactive~ : Bool = false,
 ) -> @argparse.PositionArg {
   let metadata = position.metadata
   let required = metadata.required &&
@@ -138,7 +138,7 @@ fn fallback_to_help_when_no_match(cmd : CommandDef) -> Bool {
 fn build_command_with_config(
   cmd : CommandDef,
   config : Map[String, Json],
-  interactive_environment? : Bool = false,
+  interactive_environment~ : Bool = false,
 ) -> @argparse.Command {
   let interactive = interactive_environment && cmd.interactive is Some(_)
   let flags : Array[@argparse.FlagArg] = []
