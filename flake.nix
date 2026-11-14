@@ -33,8 +33,7 @@
         rec {
           default = pkgs.mkShell {
             packages = [
-              # Keep the existing compiler while changing the toolchain provider.
-              pkgs.moonbit-bin."v0.10.9+6e6c44045+fc2a4ee"
+              pkgs.moonbit-bin.latest
             ];
             shellHook = ''
               # Enable Git Hook

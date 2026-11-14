@@ -1,5 +1,6 @@
 ///|
 /// Finds a named file directly under `home_dir`, raising when it is absent.
+/// Call this helper from the `moonbitlang/core/async` runtime.
 pub async fn find_home_target_file(
   home_dir : String,
   file_name : String,
@@ -14,6 +15,7 @@ pub async fn find_home_target_file(
 ///|
 /// Searches upward from `start_dir` through `top_dir` for a named file.
 /// The search is bounded by `top_dir` and raises when no file is found.
+/// Call this helper from the `moonbitlang/core/async` runtime.
 pub async fn find_parent_target_file(
   file_name : String,
   top_dir : String,
@@ -47,6 +49,7 @@ async fn find_parent_target_file_from(
 ///|
 /// Recursively finds matching files below `start_dir`, applying inherited
 /// `.gitignore`-style rules and returning paths in deterministic order.
+/// Call this helper from the `moonbitlang/core/async` runtime.
 pub async fn collect_recursive_target_files(
   start_dir : String,
   file_name : String,
@@ -63,13 +66,20 @@ async fn collect_recursive_target_files_from(
   inherited_ignore_rules : Array[IgnoreRuleSet],
 ) -> Array[String] {
   let target_file = @path.Path::join(dir, file_name).to_string()
-  let (local_ignore_rules, has_target_file, entries) = @async.with_task_group(group => {
-    let ignore_task = group.spawn(() => read_ignore_rules(dir))
-    let target_task = group.spawn(() => @fs.exists(target_file))
-    let entries_task = group.spawn(() => {
-      @fs.readdir(dir, include_hidden=true, include_special=false, sort=true)
+  let mut local_ignore_rules = None
+  let mut has_target_file = false
+  let mut entries = []
+  @async.with_task_group(group => {
+    group.spawn_bg(() => local_ignore_rules = read_ignore_rules(dir))
+    group.spawn_bg(() => has_target_file = @fs.exists(target_file))
+    group.spawn_bg(() => {
+      entries = @fs.readdir(
+        dir,
+        include_hidden=true,
+        include_special=false,
+        sort=true,
+      )
     })
-    (ignore_task.wait(), target_task.wait(), entries_task.wait())
   })
   let ignore_rules = match local_ignore_rules {
     Some(rules) =>

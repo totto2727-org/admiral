@@ -1,6 +1,11 @@
 ///|
 test "string() creates StringOpt OptionDef" {
-  let opt = string("name", short='n', description="User name", required=true)
+  let opt = @admiral.string(
+    "name",
+    short='n',
+    description="User name",
+    required=true,
+  )
   inspect(opt.name, content="name")
   inspect(opt.metadata.type_, content="StringOpt")
   inspect(
@@ -15,44 +20,58 @@ test "string() creates StringOpt OptionDef" {
 
 ///|
 test "string() with default value" {
-  let opt = string("output", description="Output path", default=Some("stdout"))
+  let opt = @admiral.string(
+    "output",
+    description="Output path",
+    default=Some("stdout"),
+  )
   debug_inspect(opt.metadata.default_value, content="Some(\"stdout\")")
   inspect(opt.metadata.required, content="false")
 }
 
 ///|
 test "string() retains interactive input metadata" {
-  let opt = string("project", interactive=true)
+  let opt = @admiral.string("project", interactive=true)
   inspect(opt.metadata.interactive, content="true")
 }
 
 ///|
 test "bool() creates BoolOpt OptionDef" {
-  let opt = bool("verbose", short='v', description="Verbose output")
+  let opt = @admiral.bool("verbose", short='v', description="Verbose output")
   inspect(opt.metadata.type_, content="BoolOpt")
   inspect(opt.metadata.required, content="false")
 }
 
 ///|
 test "int() creates IntOpt OptionDef" {
-  let opt = int("count", short='c', description="Repeat count", default=Some(3))
+  let opt = @admiral.int(
+    "count",
+    short='c',
+    description="Repeat count",
+    default=Some(3),
+  )
   inspect(opt.metadata.type_, content="IntOpt")
   debug_inspect(opt.metadata.default_value, content="Some(\"3\")")
 }
 
 ///|
 test "int() required" {
-  let opt = int("port", short='p', description="Port number", required=true)
+  let opt = @admiral.int(
+    "port",
+    short='p',
+    description="Port number",
+    required=true,
+  )
   inspect(opt.metadata.required, content="true")
   debug_inspect(opt.metadata.default_value, content="None")
 }
 
 ///|
 test "numeric option helpers create typed definitions" {
-  let int64_opt = int64("offset", default=Some(42L))
-  let uint_opt = uint("retries", default=Some(42U))
-  let uint64_opt = uint64("limit", default=Some(42UL))
-  let double_opt = double("ratio", default=Some(1.25))
+  let int64_opt = @admiral.int64("offset", default=Some(42L))
+  let uint_opt = @admiral.uint("retries", default=Some(42U))
+  let uint64_opt = @admiral.uint64("limit", default=Some(42UL))
+  let double_opt = @admiral.double("ratio", default=Some(1.25))
   inspect(int64_opt.metadata.type_, content="Int64Opt")
   inspect(uint_opt.metadata.type_, content="UIntOpt")
   inspect(uint64_opt.metadata.type_, content="UInt64Opt")
@@ -65,13 +84,13 @@ test "numeric option helpers create typed definitions" {
 
 ///|
 test "option helpers retain environment variable metadata" {
-  let name = string("name", env="APP_NAME")
-  let verbose = bool("verbose", env="APP_VERBOSE")
-  let port = int("port", env="APP_PORT")
-  let offset = int64("offset", env="APP_OFFSET")
-  let retries = uint("retries", env="APP_RETRIES")
-  let limit = uint64("limit", env="APP_LIMIT")
-  let ratio = double("ratio", env="APP_RATIO")
+  let name = @admiral.string("name", env="APP_NAME")
+  let verbose = @admiral.bool("verbose", env="APP_VERBOSE")
+  let port = @admiral.int("port", env="APP_PORT")
+  let offset = @admiral.int64("offset", env="APP_OFFSET")
+  let retries = @admiral.uint("retries", env="APP_RETRIES")
+  let limit = @admiral.uint64("limit", env="APP_LIMIT")
+  let ratio = @admiral.double("ratio", env="APP_RATIO")
   debug_inspect(name.metadata.env, content="Some(\"APP_NAME\")")
   debug_inspect(verbose.metadata.env, content="Some(\"APP_VERBOSE\")")
   debug_inspect(port.metadata.env, content="Some(\"APP_PORT\")")
@@ -83,9 +102,9 @@ test "option helpers retain environment variable metadata" {
 
 ///|
 test "option helpers retain independent config keys" {
-  let name = string("name", env="APP_NAME", config="display_name")
-  let verbose = bool("verbose", config="debug")
-  let port = int("port", config="listen_port")
+  let name = @admiral.string("name", env="APP_NAME", config="display_name")
+  let verbose = @admiral.bool("verbose", config="debug")
+  let port = @admiral.int("port", config="listen_port")
   debug_inspect(name.config, content="Some(\"display_name\")")
   debug_inspect(verbose.config, content="Some(\"debug\")")
   debug_inspect(port.config, content="Some(\"listen_port\")")
@@ -94,12 +113,12 @@ test "option helpers retain independent config keys" {
 
 ///|
 test "plural option helpers encode Array result types" {
-  let names : OptionDef[Array[String]] = strings("name")
-  let counts : OptionDef[Array[Int]] = ints("count")
-  let offsets : OptionDef[Array[Int64]] = int64s("offset")
-  let retries : OptionDef[Array[UInt]] = uints("retry")
-  let limits : OptionDef[Array[UInt64]] = uint64s("limit")
-  let ratios : OptionDef[Array[Double]] = doubles("ratio")
+  let names : @admiral.OptionDef[Array[String]] = @admiral.strings("name")
+  let counts : @admiral.OptionDef[Array[Int32]] = @admiral.ints("count")
+  let offsets : @admiral.OptionDef[Array[Int64]] = @admiral.int64s("offset")
+  let retries : @admiral.OptionDef[Array[UInt32]] = @admiral.uints("retry")
+  let limits : @admiral.OptionDef[Array[UInt64]] = @admiral.uint64s("limit")
+  let ratios : @admiral.OptionDef[Array[Double]] = @admiral.doubles("ratio")
   inspect(names.metadata.multiple, content="true")
   inspect(counts.metadata.multiple, content="true")
   inspect(offsets.metadata.multiple, content="true")

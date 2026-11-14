@@ -1,14 +1,26 @@
 ///|
 test "bash completion contains commands and options" {
-  let app = CliApp::CliApp(name="myapp", version="0.1.0", description="Test", commands=[
-    CommandDef::CommandDef(name="greet", description="Greet someone", options=[
-      string("name", short='n', description="Name", required=true),
-      bool("verbose", short='v', description="Verbose"),
-    ]),
-    CommandDef::CommandDef(name="db", description="Database", subcommands=[
-      CommandDef::CommandDef(name="migrate", description="Migrations"),
-    ]),
-  ])
+  let app = @admiral.CliApp::CliApp(
+    name="myapp",
+    version="0.1.0",
+    description="Test",
+    commands=[
+      @admiral.CommandDef::CommandDef(
+        name="greet",
+        description="Greet someone",
+        options=[
+          @admiral.string("name", short='n', description="Name", required=true),
+          @admiral.bool("verbose", short='v', description="Verbose"),
+        ],
+      ),
+      @admiral.CommandDef::CommandDef(name="db", description="Database", subcommands=[
+        @admiral.CommandDef::CommandDef(
+          name="migrate",
+          description="Migrations",
+        ),
+      ]),
+    ],
+  )
   let bash = app.render_bash_completion()
   inspect(bash.contains("_myapp"), content="true")
   inspect(bash.contains("greet"), content="true")
@@ -21,11 +33,20 @@ test "bash completion contains commands and options" {
 
 ///|
 test "zsh completion contains commands and options" {
-  let app = CliApp::CliApp(name="myapp", version="0.1.0", description="Test", commands=[
-    CommandDef::CommandDef(name="greet", description="Greet someone", options=[
-      string("name", short='n', description="Name", required=true),
-    ]),
-  ])
+  let app = @admiral.CliApp::CliApp(
+    name="myapp",
+    version="0.1.0",
+    description="Test",
+    commands=[
+      @admiral.CommandDef::CommandDef(
+        name="greet",
+        description="Greet someone",
+        options=[
+          @admiral.string("name", short='n', description="Name", required=true),
+        ],
+      ),
+    ],
+  )
   let zsh = app.render_zsh_completion()
   inspect(zsh.contains("#compdef myapp"), content="true")
   inspect(zsh.contains("greet"), content="true")
@@ -34,17 +55,28 @@ test "zsh completion contains commands and options" {
 
 ///|
 test "fish completion contains commands and options" {
-  let app = CliApp::CliApp(name="myapp", version="0.1.0", description="Test", commands=[
-    CommandDef::CommandDef(name="greet", description="Greet someone", options=[
-      string("name", short='n', description="Name", required=true),
-      bool("verbose", short='v', description="Verbose"),
-    ]),
-    CommandDef::CommandDef(name="db", description="Database", subcommands=[
-      CommandDef::CommandDef(name="migrate", description="Migrations", options=[
-        bool("dry-run", description="Dry run"),
+  let app = @admiral.CliApp::CliApp(
+    name="myapp",
+    version="0.1.0",
+    description="Test",
+    commands=[
+      @admiral.CommandDef::CommandDef(
+        name="greet",
+        description="Greet someone",
+        options=[
+          @admiral.string("name", short='n', description="Name", required=true),
+          @admiral.bool("verbose", short='v', description="Verbose"),
+        ],
+      ),
+      @admiral.CommandDef::CommandDef(name="db", description="Database", subcommands=[
+        @admiral.CommandDef::CommandDef(
+          name="migrate",
+          description="Migrations",
+          options=[@admiral.bool("dry-run", description="Dry run")],
+        ),
       ]),
-    ]),
-  ])
+    ],
+  )
   let fish = app.render_fish_completion()
   inspect(fish.contains("complete -c myapp"), content="true")
   inspect(fish.contains("greet"), content="true")

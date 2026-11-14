@@ -3,13 +3,13 @@
 /// be passed to the declaration and later to its matching context getter.
 pub fn CommandDef::CommandDef(
   name~ : String,
-  description? : String = "",
-  options? : Array[&ToStoredOption] = [],
-  positionals? : Array[&ToStoredPosition] = [],
-  examples? : Array[String] = [],
-  subcommands? : Array[CommandDef] = [],
-  interactive? : (async (InteractiveContext) -> Unit)? = None,
-  run? : (async (Context) -> Unit)? = None,
+  description~ : String = "",
+  options~ : Array[&ToStoredOption] = [],
+  positionals~ : Array[&ToStoredPosition] = [],
+  examples~ : Array[String] = [],
+  subcommands~ : Array[CommandDef] = [],
+  interactive~ : (async (InteractiveContext) -> Unit)? = None,
+  run~ : (async (Context) -> Unit)? = None,
 ) -> CommandDef {
   let options = options.map(fn(option) {
     ToStoredOption::to_stored_option(option)
@@ -35,14 +35,14 @@ pub fn CommandDef::CommandDef(
 /// independent configuration keys.
 pub fn CliApp::CliApp(
   name~ : String,
-  version? : String = "0.0.0",
-  description? : String = "",
-  options? : Array[&ToStoredOption] = [],
-  positionals? : Array[&ToStoredPosition] = [],
-  commands? : Array[CommandDef] = [],
-  interactive? : (async (InteractiveContext) -> Unit)? = None,
-  run? : (async (Context) -> Unit)? = None,
-  load_config? : (() -> Map[String, Json] raise ConfigLoadFailure)? = None,
+  version~ : String = "0.0.0",
+  description~ : String = "",
+  options~ : Array[&ToStoredOption] = [],
+  positionals~ : Array[&ToStoredPosition] = [],
+  commands~ : Array[CommandDef] = [],
+  interactive~ : (async (InteractiveContext) -> Unit)? = None,
+  run~ : (async (Context) -> Unit)? = None,
+  load_config~ : (() -> Map[String, Json] raise ConfigLoadFailure)? = None,
 ) -> CliApp {
   let root_options = options.map(fn(option) {
     ToStoredOption::to_stored_option(option)
@@ -108,7 +108,7 @@ fn find_command_def(commands : Array[CommandDef], name : String) -> CommandDef? 
 fn build_root_command(
   app : CliApp,
   config : Map[String, Json],
-  interactive_environment? : Bool = false,
+  interactive_environment~ : Bool = false,
 ) -> @argparse.Command {
   let interactive = interactive_environment && app.interactive is Some(_)
   let flags : Array[@argparse.FlagArg] = []
@@ -231,8 +231,8 @@ async fn execute_command(
 async fn CliApp::run_with_interactive_environment(
   self : CliApp,
   interactive_environment : Bool,
-  argv? : Array[String]? = None,
-  env? : Map[String, String] = @env.get_env_vars(),
+  argv~ : Array[String]? = None,
+  env~ : Map[String, String] = @env.get_env_vars(),
 ) -> Unit {
   let config = match self.load_config {
     Some(load_config) => load_config()
@@ -264,8 +264,8 @@ async fn CliApp::run_with_interactive_environment(
 /// when at least one selected definition opts in and an input TTY is available.
 pub async fn CliApp::run(
   self : CliApp,
-  argv? : Array[String]? = None,
-  env? : Map[String, String] = @env.get_env_vars(),
+  argv~ : Array[String]? = None,
+  env~ : Map[String, String] = @env.get_env_vars(),
 ) -> Unit {
   // TODO: On JavaScript, uncaught errors from moonbitlang/async's top-level runner currently exit without output or a non-zero status.
   self.run_with_interactive_environment(@tui_io.is_tty(), argv~, env~)
