@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
     moonbit-overlay = {
-      url = "github:totto2727-org/moonbit-overlay";
+      url = "github:moonbit-community/moonbit-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -33,7 +33,8 @@
         rec {
           default = pkgs.mkShell {
             packages = [
-              pkgs.moonbit-bin.moonbit.latest
+              # Keep the existing compiler while changing the toolchain provider.
+              pkgs.moonbit-bin."v0.10.9+6e6c44045+fc2a4ee"
             ];
             shellHook = ''
               # Enable Git Hook
