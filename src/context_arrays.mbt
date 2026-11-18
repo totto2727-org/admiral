@@ -47,7 +47,7 @@ pub fn[Metadata] Context::get_ints(
   match self.interactive_values.get(argument.name) {
     Some(values) =>
       return ReadOnlyArray::from_array(
-        values.map(value => @string.parse_int(value, base=10)),
+        values.map(value => @string.parse_int(value, radix=10)),
       )
     None => ()
   }
@@ -63,7 +63,7 @@ pub fn[Metadata] Context::get_ints(
     }
   }
   match self.values.get(argument.name) {
-    Some(values) => values.map(value => @string.parse_int(value, base=10))
+    Some(values) => values.map(value => @string.parse_int(value, radix=10))
     None => []
   }
 }
@@ -90,7 +90,7 @@ pub fn[Metadata] Context::get_int64s(
   match self.interactive_values.get(argument.name) {
     Some(values) =>
       return ReadOnlyArray::from_array(
-        values.map(value => @string.parse_int64(value, base=10)),
+        values.map(value => @string.parse_int64(value, radix=10)),
       )
     None => ()
   }
@@ -106,7 +106,7 @@ pub fn[Metadata] Context::get_int64s(
     }
   }
   match self.values.get(argument.name) {
-    Some(values) => values.map(value => @string.parse_int64(value, base=10))
+    Some(values) => values.map(value => @string.parse_int64(value, radix=10))
     None => []
   }
 }
@@ -133,7 +133,7 @@ pub fn[Metadata] Context::get_uints(
   match self.interactive_values.get(argument.name) {
     Some(values) =>
       return ReadOnlyArray::from_array(
-        values.map(value => @string.parse_uint(value, base=10)),
+        values.map(value => @string.parse_uint(value, radix=10)),
       )
     None => ()
   }
@@ -149,7 +149,7 @@ pub fn[Metadata] Context::get_uints(
     }
   }
   match self.values.get(argument.name) {
-    Some(values) => values.map(value => @string.parse_uint(value, base=10))
+    Some(values) => values.map(value => @string.parse_uint(value, radix=10))
     None => []
   }
 }
@@ -176,7 +176,7 @@ pub fn[Metadata] Context::get_uint64s(
   match self.interactive_values.get(argument.name) {
     Some(values) =>
       return ReadOnlyArray::from_array(
-        values.map(value => @string.parse_uint64(value, base=10)),
+        values.map(value => @string.parse_uint64(value, radix=10)),
       )
     None => ()
   }
@@ -192,7 +192,7 @@ pub fn[Metadata] Context::get_uint64s(
     }
   }
   match self.values.get(argument.name) {
-    Some(values) => values.map(value => @string.parse_uint64(value, base=10))
+    Some(values) => values.map(value => @string.parse_uint64(value, radix=10))
     None => []
   }
 }

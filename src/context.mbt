@@ -79,7 +79,7 @@ pub fn[Metadata] Context::get_int(
   argument : ArgDef[Int32, Metadata],
 ) -> Int32? raise {
   match self.interactive_values.get(argument.name) {
-    Some([value, ..]) => return Some(@string.parse_int(value, base=10))
+    Some([value, ..]) => return Some(@string.parse_int(value, radix=10))
     Some([]) => return None
     None => ()
   }
@@ -94,7 +94,7 @@ pub fn[Metadata] Context::get_int(
     }
   }
   match self.values.get(argument.name) {
-    Some([value, ..]) => Some(@string.parse_int(value, base=10))
+    Some([value, ..]) => Some(@string.parse_int(value, radix=10))
     Some([]) | None => None
   }
 }
@@ -119,7 +119,7 @@ pub fn[Metadata] Context::get_int64(
   argument : ArgDef[Int64, Metadata],
 ) -> Int64? raise {
   match self.interactive_values.get(argument.name) {
-    Some([value, ..]) => return Some(@string.parse_int64(value, base=10))
+    Some([value, ..]) => return Some(@string.parse_int64(value, radix=10))
     Some([]) => return None
     None => ()
   }
@@ -134,7 +134,7 @@ pub fn[Metadata] Context::get_int64(
     }
   }
   match self.values.get(argument.name) {
-    Some([value, ..]) => Some(@string.parse_int64(value, base=10))
+    Some([value, ..]) => Some(@string.parse_int64(value, radix=10))
     Some([]) | None => None
   }
 }
@@ -158,7 +158,7 @@ pub fn[Metadata] Context::get_uint(
   argument : ArgDef[UInt32, Metadata],
 ) -> UInt32? raise {
   match self.interactive_values.get(argument.name) {
-    Some([value, ..]) => return Some(@string.parse_uint(value, base=10))
+    Some([value, ..]) => return Some(@string.parse_uint(value, radix=10))
     Some([]) => return None
     None => ()
   }
@@ -173,7 +173,7 @@ pub fn[Metadata] Context::get_uint(
     }
   }
   match self.values.get(argument.name) {
-    Some([value, ..]) => Some(@string.parse_uint(value, base=10))
+    Some([value, ..]) => Some(@string.parse_uint(value, radix=10))
     Some([]) | None => None
   }
 }
@@ -198,7 +198,7 @@ pub fn[Metadata] Context::get_uint64(
   argument : ArgDef[UInt64, Metadata],
 ) -> UInt64? raise {
   match self.interactive_values.get(argument.name) {
-    Some([value, ..]) => return Some(@string.parse_uint64(value, base=10))
+    Some([value, ..]) => return Some(@string.parse_uint64(value, radix=10))
     Some([]) => return None
     None => ()
   }
@@ -213,7 +213,7 @@ pub fn[Metadata] Context::get_uint64(
     }
   }
   match self.values.get(argument.name) {
-    Some([value, ..]) => Some(@string.parse_uint64(value, base=10))
+    Some([value, ..]) => Some(@string.parse_uint64(value, radix=10))
     Some([]) | None => None
   }
 }

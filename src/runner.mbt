@@ -268,5 +268,5 @@ pub async fn CliApp::run(
   env~ : Map[String, String] = @env.get_env_vars(),
 ) -> Unit {
   // TODO: On JavaScript, uncaught errors from moonbitlang/async's top-level runner currently exit without output or a non-zero status.
-  self.run_with_interactive_environment(@tui_io.is_tty(), argv~, env~)
+  self.run_with_interactive_environment(has_input_tty(), argv~, env~)
 }

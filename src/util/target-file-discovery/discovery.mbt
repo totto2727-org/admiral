@@ -73,12 +73,10 @@ async fn collect_recursive_target_files_from(
     group.spawn_bg(() => local_ignore_rules = read_ignore_rules(dir))
     group.spawn_bg(() => has_target_file = @fs.exists(target_file))
     group.spawn_bg(() => {
-      entries = @fs.readdir(
-        dir,
-        include_hidden=true,
-        include_special=false,
-        sort=true,
-      )
+      let directory = @fs.opendir(dir)
+      defer directory.close()
+      entries = directory.read_all(include_hidden=true, include_special=false)
+      entries.sort()
     })
   })
   let ignore_rules = match local_ignore_rules {

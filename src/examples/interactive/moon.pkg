@@ -2,8 +2,16 @@ supported_targets = "js+native"
 
 import {
   "totto2727/admiral",
-  "mizchi/tui",
   "moonbitlang/async",
 }
 
+#cfg(target = "native")
+import {
+  "moonbitlang/core/encoding/utf8",
+}
+
 pkgtype(kind: "executable")
+
+options(
+  "native-stub": [ "prompt.c" ],
+)
