@@ -14,5 +14,5 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - uses: totto2727-org/monorepo/.github/actions/setup-moonbit@4cdb3e1de3140fcec4812e568da91209962975c4
-      - uses: totto2727-org/monorepo/.github/actions/check-moonbit@4cdb3e1de3140fcec4812e568da91209962975c4
+      - uses: totto2727-org/monorepo/.github/actions/setup-moonbit@1e96bd0df4241d3b5981cc508d74543db54c6c29
+      - uses: totto2727-org/monorepo/.github/actions/check-moonbit@1e96bd0df4241d3b5981cc508d74543db54c6c29
