@@ -4,20 +4,20 @@
 
 ## Public API
 
-- `Context::get_bool`
-- `Context::get_string`
-- `Context::get_string_required`
-- `Context::get_int`
-- `Context::get_int_required`
-- `Context::get_int64`
-- `Context::get_int64_required`
-- `Context::get_uint`
-- `Context::get_uint_required`
-- `Context::get_uint64`
-- `Context::get_uint64_required`
-- `Context::get_double`
-- `Context::get_double_required`
-- `Context::get_subcommand`
+- `@admiral.Context::get_bool`
+- `@admiral.Context::get_string`
+- `@admiral.Context::get_string_required`
+- `@admiral.Context::get_int`
+- `@admiral.Context::get_int_required`
+- `@admiral.Context::get_int64`
+- `@admiral.Context::get_int64_required`
+- `@admiral.Context::get_uint`
+- `@admiral.Context::get_uint_required`
+- `@admiral.Context::get_uint64`
+- `@admiral.Context::get_uint64_required`
+- `@admiral.Context::get_double`
+- `@admiral.Context::get_double_required`
+- `@admiral.Context::get_subcommand`
 
 ## Test
 
@@ -73,18 +73,18 @@ test "Context scalar resolution 1-1 - parser values supply all getters" {
   let matches = @argparse.Command("test", flags=[@argparse.FlagArg("flag")], options=[
     @argparse.OptionArg("value"),
   ]).parse(argv=["--flag", "--value", "1"], env=Map([]))
-  let ctx = Context::Context(
+  let ctx = @admiral.Context::Context(
     flags=matches.flags,
     values=matches.values,
     sources=matches.sources,
   )
-  let string_value = string("value", required=true)
-  let int_value = int("value", required=true)
-  let int64_value = int64("value", required=true)
-  let uint_value = uint("value", required=true)
-  let uint64_value = uint64("value", required=true)
-  let double_value = double("value", required=true)
-  inspect(ctx.get_bool(bool("flag")), content="true")
+  let string_value = @admiral.string("value", required=true)
+  let int_value = @admiral.int("value", required=true)
+  let int64_value = @admiral.int64("value", required=true)
+  let uint_value = @admiral.uint("value", required=true)
+  let uint64_value = @admiral.uint64("value", required=true)
+  let double_value = @admiral.double("value", required=true)
+  inspect(ctx.get_bool(@admiral.bool("flag")), content="true")
   debug_inspect(ctx.get_string(string_value), content="Some(\"1\")")
   inspect(ctx.get_string_required(string_value), content="1")
   debug_inspect(ctx.get_int(int_value), content="Some(1)")
@@ -101,22 +101,22 @@ test "Context scalar resolution 1-1 - parser values supply all getters" {
 
 ///|
 test "Context scalar resolution 1-2 - config values supply all getters" {
-  let ctx = Context::Context(config={
-    "bool": true.to_json(),
-    "string": "1".to_json(),
-    "int": (1).to_json(),
-    "int64": 1L.to_json(),
-    "uint": 1U.to_json(),
-    "uint64": 1UL.to_json(),
-    "double": 1.0.to_json(),
+  let ctx = @admiral.Context::Context(config={
+    "bool": ToJson::to_json(true),
+    "string": ToJson::to_json("1"),
+    "int": ToJson::to_json(1),
+    "int64": ToJson::to_json(1L),
+    "uint": ToJson::to_json(1U),
+    "uint64": ToJson::to_json(1UL),
+    "double": ToJson::to_json(1.0),
   })
-  let string_value = string("value", config="string", required=true)
-  let int_value = int("value", config="int", required=true)
-  let int64_value = int64("value", config="int64", required=true)
-  let uint_value = uint("value", config="uint", required=true)
-  let uint64_value = uint64("value", config="uint64", required=true)
-  let double_value = double("value", config="double", required=true)
-  inspect(ctx.get_bool(bool("flag", config="bool")), content="true")
+  let string_value = @admiral.string("value", config="string", required=true)
+  let int_value = @admiral.int("value", config="int", required=true)
+  let int64_value = @admiral.int64("value", config="int64", required=true)
+  let uint_value = @admiral.uint("value", config="uint", required=true)
+  let uint64_value = @admiral.uint64("value", config="uint64", required=true)
+  let double_value = @admiral.double("value", config="double", required=true)
+  inspect(ctx.get_bool(@admiral.bool("flag", config="bool")), content="true")
   debug_inspect(ctx.get_string(string_value), content="Some(\"1\")")
   inspect(ctx.get_string_required(string_value), content="1")
   debug_inspect(ctx.get_int(int_value), content="Some(1)")
@@ -133,14 +133,14 @@ test "Context scalar resolution 1-2 - config values supply all getters" {
 
 ///|
 test "Context scalar resolution 1-3 - missing values use fallback behavior" {
-  let ctx = Context::Context()
-  let string_value = string("value", required=true)
-  let int_value = int("value", required=true)
-  let int64_value = int64("value", required=true)
-  let uint_value = uint("value", required=true)
-  let uint64_value = uint64("value", required=true)
-  let double_value = double("value", required=true)
-  inspect(ctx.get_bool(bool("flag")), content="false")
+  let ctx = @admiral.Context::Context()
+  let string_value = @admiral.string("value", required=true)
+  let int_value = @admiral.int("value", required=true)
+  let int64_value = @admiral.int64("value", required=true)
+  let uint_value = @admiral.uint("value", required=true)
+  let uint64_value = @admiral.uint64("value", required=true)
+  let double_value = @admiral.double("value", required=true)
+  inspect(ctx.get_bool(@admiral.bool("flag")), content="false")
   debug_inspect(ctx.get_string(string_value), content="None")
   debug_inspect(ctx.get_int(int_value), content="None")
   debug_inspect(ctx.get_int64(int64_value), content="None")
@@ -184,27 +184,27 @@ test "Context scalar resolution 2-1 - non-default parser values override config"
   let matches = @argparse.Command("test", flags=[@argparse.FlagArg("flag")], options=[
     @argparse.OptionArg("value"),
   ]).parse(argv=["--flag", "--value", "2"], env=Map([]))
-  let ctx = Context::Context(
+  let ctx = @admiral.Context::Context(
     flags=matches.flags,
     values=matches.values,
     sources=matches.sources,
     config={
-      "bool": false.to_json(),
-      "string": "1".to_json(),
-      "int": (1).to_json(),
-      "int64": 1L.to_json(),
-      "uint": 1U.to_json(),
-      "uint64": 1UL.to_json(),
-      "double": 1.0.to_json(),
+      "bool": ToJson::to_json(false),
+      "string": ToJson::to_json("1"),
+      "int": ToJson::to_json(1),
+      "int64": ToJson::to_json(1L),
+      "uint": ToJson::to_json(1U),
+      "uint64": ToJson::to_json(1UL),
+      "double": ToJson::to_json(1.0),
     },
   )
-  let string_value = string("value", config="string", required=true)
-  let int_value = int("value", config="int", required=true)
-  let int64_value = int64("value", config="int64", required=true)
-  let uint_value = uint("value", config="uint", required=true)
-  let uint64_value = uint64("value", config="uint64", required=true)
-  let double_value = double("value", config="double", required=true)
-  inspect(ctx.get_bool(bool("flag", config="bool")), content="true")
+  let string_value = @admiral.string("value", config="string", required=true)
+  let int_value = @admiral.int("value", config="int", required=true)
+  let int64_value = @admiral.int64("value", config="int64", required=true)
+  let uint_value = @admiral.uint("value", config="uint", required=true)
+  let uint64_value = @admiral.uint64("value", config="uint64", required=true)
+  let double_value = @admiral.double("value", config="double", required=true)
+  inspect(ctx.get_bool(@admiral.bool("flag", config="bool")), content="true")
   debug_inspect(ctx.get_string(string_value), content="Some(\"2\")")
   inspect(ctx.get_string_required(string_value), content="2")
   debug_inspect(ctx.get_int(int_value), content="Some(2)")
@@ -224,22 +224,26 @@ test "Context scalar resolution 2-2 - config overrides parser defaults" {
   let matches = @argparse.Command("test", options=[
     @argparse.OptionArg("value", default_values=["1"]),
   ]).parse(argv=[], env=Map([]))
-  let ctx = Context::Context(values=matches.values, sources=matches.sources, config={
-    "bool": true.to_json(),
-    "string": "2".to_json(),
-    "int": (2).to_json(),
-    "int64": 2L.to_json(),
-    "uint": 2U.to_json(),
-    "uint64": 2UL.to_json(),
-    "double": 2.0.to_json(),
-  })
-  let string_value = string("value", config="string", required=true)
-  let int_value = int("value", config="int", required=true)
-  let int64_value = int64("value", config="int64", required=true)
-  let uint_value = uint("value", config="uint", required=true)
-  let uint64_value = uint64("value", config="uint64", required=true)
-  let double_value = double("value", config="double", required=true)
-  inspect(ctx.get_bool(bool("flag", config="bool")), content="true")
+  let ctx = @admiral.Context::Context(
+    values=matches.values,
+    sources=matches.sources,
+    config={
+      "bool": ToJson::to_json(true),
+      "string": ToJson::to_json("2"),
+      "int": ToJson::to_json(2),
+      "int64": ToJson::to_json(2L),
+      "uint": ToJson::to_json(2U),
+      "uint64": ToJson::to_json(2UL),
+      "double": ToJson::to_json(2.0),
+    },
+  )
+  let string_value = @admiral.string("value", config="string", required=true)
+  let int_value = @admiral.int("value", config="int", required=true)
+  let int64_value = @admiral.int64("value", config="int64", required=true)
+  let uint_value = @admiral.uint("value", config="uint", required=true)
+  let uint64_value = @admiral.uint64("value", config="uint64", required=true)
+  let double_value = @admiral.double("value", config="double", required=true)
+  inspect(ctx.get_bool(@admiral.bool("flag", config="bool")), content="true")
   debug_inspect(ctx.get_string(string_value), content="Some(\"2\")")
   inspect(ctx.get_string_required(string_value), content="2")
   debug_inspect(ctx.get_int(int_value), content="Some(2)")
@@ -260,28 +264,31 @@ test "Context scalar resolution 3-1 - invalid parser values raise" {
     argv=["--value", "invalid"],
     env=Map([]),
   )
-  let ctx = Context::Context(values=matches.values, sources=matches.sources)
-  try ctx.get_int(int("value")) |> ignore catch {
+  let ctx = @admiral.Context::Context(
+    values=matches.values,
+    sources=matches.sources,
+  )
+  try ctx.get_int(@admiral.int("value")) |> ignore catch {
     _ => ()
   } noraise {
     _ => panic()
   }
-  try ctx.get_int64(int64("value")) |> ignore catch {
+  try ctx.get_int64(@admiral.int64("value")) |> ignore catch {
     _ => ()
   } noraise {
     _ => panic()
   }
-  try ctx.get_uint(uint("value")) |> ignore catch {
+  try ctx.get_uint(@admiral.uint("value")) |> ignore catch {
     _ => ()
   } noraise {
     _ => panic()
   }
-  try ctx.get_uint64(uint64("value")) |> ignore catch {
+  try ctx.get_uint64(@admiral.uint64("value")) |> ignore catch {
     _ => ()
   } noraise {
     _ => panic()
   }
-  try ctx.get_double(double("value")) |> ignore catch {
+  try ctx.get_double(@admiral.double("value")) |> ignore catch {
     _ => ()
   } noraise {
     _ => panic()
@@ -290,46 +297,52 @@ test "Context scalar resolution 3-1 - invalid parser values raise" {
 
 ///|
 test "Context scalar resolution 3-2 - invalid config values raise" {
-  let ctx = Context::Context(config={
-    "bool": "invalid".to_json(),
-    "string": true.to_json(),
-    "int": "invalid".to_json(),
-    "int64": (1).to_json(),
-    "uint": (-1).to_json(),
-    "uint64": (1).to_json(),
-    "double": "invalid".to_json(),
+  let ctx = @admiral.Context::Context(config={
+    "bool": ToJson::to_json("invalid"),
+    "string": ToJson::to_json(true),
+    "int": ToJson::to_json("invalid"),
+    "int64": ToJson::to_json(1),
+    "uint": ToJson::to_json(-1),
+    "uint64": ToJson::to_json(1),
+    "double": ToJson::to_json("invalid"),
   })
-  try ctx.get_bool(bool("flag", config="bool")) |> ignore catch {
+  try ctx.get_bool(@admiral.bool("flag", config="bool")) |> ignore catch {
     _ => ()
   } noraise {
     _ => panic()
   }
-  try ctx.get_string(string("value", config="string")) |> ignore catch {
+  try
+    ctx.get_string(@admiral.string("value", config="string")) |> ignore
+  catch {
     _ => ()
   } noraise {
     _ => panic()
   }
-  try ctx.get_int(int("value", config="int")) |> ignore catch {
+  try ctx.get_int(@admiral.int("value", config="int")) |> ignore catch {
     _ => ()
   } noraise {
     _ => panic()
   }
-  try ctx.get_int64(int64("value", config="int64")) |> ignore catch {
+  try ctx.get_int64(@admiral.int64("value", config="int64")) |> ignore catch {
     _ => ()
   } noraise {
     _ => panic()
   }
-  try ctx.get_uint(uint("value", config="uint")) |> ignore catch {
+  try ctx.get_uint(@admiral.uint("value", config="uint")) |> ignore catch {
     _ => ()
   } noraise {
     _ => panic()
   }
-  try ctx.get_uint64(uint64("value", config="uint64")) |> ignore catch {
+  try
+    ctx.get_uint64(@admiral.uint64("value", config="uint64")) |> ignore
+  catch {
     _ => ()
   } noraise {
     _ => panic()
   }
-  try ctx.get_double(double("value", config="double")) |> ignore catch {
+  try
+    ctx.get_double(@admiral.double("value", config="double")) |> ignore
+  catch {
     _ => ()
   } noraise {
     _ => panic()
@@ -337,11 +350,11 @@ test "Context scalar resolution 3-2 - invalid config values raise" {
 }
 ```
 
-### `Context::get_subcommand`
+### `@admiral.Context::get_subcommand`
 
 ```mermaid
 flowchart TD
-  Start(["Context::get_subcommand"]) --> Invoke["Invoke once"]
+  Start(["@admiral.Context::get_subcommand"]) --> Invoke["Invoke once"]
   Invoke --> Name["selected name matches"]
   Invoke --> Nested["nested context matches"]
   Name --> Case1["1: returns the selected name and nested context"]
@@ -351,9 +364,9 @@ flowchart TD
 ```mbt check
 ///|
 test "Context get_subcommand 1 - returns nested context" {
-  let port = string("port")
-  let sub_ctx = Context::Context(values={ "port": ["8080"] })
-  let ctx = Context::Context(subcommand=Some(("serve", sub_ctx)))
+  let port = @admiral.string("port")
+  let sub_ctx = @admiral.Context::Context(values={ "port": ["8080"] })
+  let ctx = @admiral.Context::Context(subcommand=Some(("serve", sub_ctx)))
   match ctx.get_subcommand() {
     Some((name, sub)) => {
       inspect(name, content="serve")

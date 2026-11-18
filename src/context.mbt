@@ -76,10 +76,10 @@ pub fn[Metadata] Context::get_string_required(
 /// Parses and returns the first signed integer value, or `None` when absent.
 pub fn[Metadata] Context::get_int(
   self : Context,
-  argument : ArgDef[Int, Metadata],
-) -> Int? raise {
+  argument : ArgDef[Int32, Metadata],
+) -> Int32? raise {
   match self.interactive_values.get(argument.name) {
-    Some([value, ..]) => return Some(@string.parse_int(value, base=10))
+    Some([value, ..]) => return Some(@string.parse_int(value, radix=10))
     Some([]) => return None
     None => ()
   }
@@ -94,7 +94,7 @@ pub fn[Metadata] Context::get_int(
     }
   }
   match self.values.get(argument.name) {
-    Some([value, ..]) => Some(@string.parse_int(value, base=10))
+    Some([value, ..]) => Some(@string.parse_int(value, radix=10))
     Some([]) | None => None
   }
 }
@@ -103,8 +103,8 @@ pub fn[Metadata] Context::get_int(
 /// Returns the required signed integer value, raising when it is absent.
 pub fn[Metadata] Context::get_int_required(
   self : Context,
-  argument : ArgDef[Int, Metadata],
-) -> Int raise {
+  argument : ArgDef[Int32, Metadata],
+) -> Int32 raise {
   match self.get_int(argument) {
     Some(value) => value
     None => fail("missing required argument: " + argument.name)
@@ -119,7 +119,7 @@ pub fn[Metadata] Context::get_int64(
   argument : ArgDef[Int64, Metadata],
 ) -> Int64? raise {
   match self.interactive_values.get(argument.name) {
-    Some([value, ..]) => return Some(@string.parse_int64(value, base=10))
+    Some([value, ..]) => return Some(@string.parse_int64(value, radix=10))
     Some([]) => return None
     None => ()
   }
@@ -134,7 +134,7 @@ pub fn[Metadata] Context::get_int64(
     }
   }
   match self.values.get(argument.name) {
-    Some([value, ..]) => Some(@string.parse_int64(value, base=10))
+    Some([value, ..]) => Some(@string.parse_int64(value, radix=10))
     Some([]) | None => None
   }
 }
@@ -155,10 +155,10 @@ pub fn[Metadata] Context::get_int64_required(
 /// Parses and returns the first unsigned integer value, or `None` when absent.
 pub fn[Metadata] Context::get_uint(
   self : Context,
-  argument : ArgDef[UInt, Metadata],
-) -> UInt? raise {
+  argument : ArgDef[UInt32, Metadata],
+) -> UInt32? raise {
   match self.interactive_values.get(argument.name) {
-    Some([value, ..]) => return Some(@string.parse_uint(value, base=10))
+    Some([value, ..]) => return Some(@string.parse_uint(value, radix=10))
     Some([]) => return None
     None => ()
   }
@@ -173,7 +173,7 @@ pub fn[Metadata] Context::get_uint(
     }
   }
   match self.values.get(argument.name) {
-    Some([value, ..]) => Some(@string.parse_uint(value, base=10))
+    Some([value, ..]) => Some(@string.parse_uint(value, radix=10))
     Some([]) | None => None
   }
 }
@@ -182,8 +182,8 @@ pub fn[Metadata] Context::get_uint(
 /// Returns the required unsigned integer value.
 pub fn[Metadata] Context::get_uint_required(
   self : Context,
-  argument : ArgDef[UInt, Metadata],
-) -> UInt raise {
+  argument : ArgDef[UInt32, Metadata],
+) -> UInt32 raise {
   match self.get_uint(argument) {
     Some(value) => value
     None => fail("missing required argument: " + argument.name)
@@ -198,7 +198,7 @@ pub fn[Metadata] Context::get_uint64(
   argument : ArgDef[UInt64, Metadata],
 ) -> UInt64? raise {
   match self.interactive_values.get(argument.name) {
-    Some([value, ..]) => return Some(@string.parse_uint64(value, base=10))
+    Some([value, ..]) => return Some(@string.parse_uint64(value, radix=10))
     Some([]) => return None
     None => ()
   }
@@ -213,7 +213,7 @@ pub fn[Metadata] Context::get_uint64(
     }
   }
   match self.values.get(argument.name) {
-    Some([value, ..]) => Some(@string.parse_uint64(value, base=10))
+    Some([value, ..]) => Some(@string.parse_uint64(value, radix=10))
     Some([]) | None => None
   }
 }

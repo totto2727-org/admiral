@@ -13,7 +13,7 @@ using @admiral {
 ///|
 async test "array option appends and parses repeated values" {
   let values = ints("value", required=true)
-  let captured : Ref[ReadOnlyArray[Int]] = Ref([])
+  let captured : Ref[ReadOnlyArray[Int32]] = Ref([])
   let app = CliApp::CliApp(name="test", commands=[
     CommandDef::CommandDef(
       name="collect",

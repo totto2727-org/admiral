@@ -11,7 +11,7 @@ fn[T] position_def(
   {
     name,
     config,
-    metadata: { type_, description, required, multiple, interactive },
+    metadata: { type_, description, required, multiple, interactive, },
   }
 }
 
@@ -20,10 +20,10 @@ fn[T] position_def(
 /// by the parser unless an interactive callback or configured value supplies it.
 pub fn position_string(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> PositionDef[String] {
   position_def(
     name,
@@ -41,10 +41,10 @@ pub fn position_string(
 /// `Context::get_strings`.
 pub fn position_strings(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> PositionDef[Array[String]] {
   position_def(
     name,
@@ -61,11 +61,11 @@ pub fn position_strings(
 /// Defines a scalar signed integer positional argument.
 pub fn position_int(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
-) -> PositionDef[Int] {
+  required~ : Bool = false,
+  interactive~ : Bool = false,
+) -> PositionDef[Int32] {
   position_def(name, config, IntOpt, description, required, false, interactive)
 }
 
@@ -73,11 +73,11 @@ pub fn position_int(
 /// Defines a variadic signed integer positional argument.
 pub fn position_ints(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
-) -> PositionDef[Array[Int]] {
+  required~ : Bool = false,
+  interactive~ : Bool = false,
+) -> PositionDef[Array[Int32]] {
   position_def(name, config, IntOpt, description, required, true, interactive)
 }
 
@@ -85,10 +85,10 @@ pub fn position_ints(
 /// Defines a scalar 64-bit signed integer positional argument.
 pub fn position_int64(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> PositionDef[Int64] {
   position_def(
     name,
@@ -105,10 +105,10 @@ pub fn position_int64(
 /// Defines a variadic 64-bit signed integer positional argument.
 pub fn position_int64s(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> PositionDef[Array[Int64]] {
   position_def(name, config, Int64Opt, description, required, true, interactive)
 }
@@ -117,11 +117,11 @@ pub fn position_int64s(
 /// Defines a scalar unsigned integer positional argument.
 pub fn position_uint(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
-) -> PositionDef[UInt] {
+  required~ : Bool = false,
+  interactive~ : Bool = false,
+) -> PositionDef[UInt32] {
   position_def(name, config, UIntOpt, description, required, false, interactive)
 }
 
@@ -129,11 +129,11 @@ pub fn position_uint(
 /// Defines a variadic unsigned integer positional argument.
 pub fn position_uints(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
-) -> PositionDef[Array[UInt]] {
+  required~ : Bool = false,
+  interactive~ : Bool = false,
+) -> PositionDef[Array[UInt32]] {
   position_def(name, config, UIntOpt, description, required, true, interactive)
 }
 
@@ -141,10 +141,10 @@ pub fn position_uints(
 /// Defines a scalar 64-bit unsigned integer positional argument.
 pub fn position_uint64(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> PositionDef[UInt64] {
   position_def(
     name,
@@ -161,10 +161,10 @@ pub fn position_uint64(
 /// Defines a variadic 64-bit unsigned integer positional argument.
 pub fn position_uint64s(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> PositionDef[Array[UInt64]] {
   position_def(
     name,
@@ -181,10 +181,10 @@ pub fn position_uint64s(
 /// Defines a scalar double-precision floating-point positional argument.
 pub fn position_double(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> PositionDef[Double] {
   position_def(
     name,
@@ -201,10 +201,10 @@ pub fn position_double(
 /// Defines a variadic double-precision floating-point positional argument.
 pub fn position_doubles(
   name : String,
-  description? : String = "",
+  description~ : String = "",
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> PositionDef[Array[Double]] {
   position_def(
     name,

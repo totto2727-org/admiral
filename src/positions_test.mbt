@@ -1,13 +1,17 @@
 ///|
 test "position helpers encode scalar and array result types" {
-  let input : PositionDef[String] = position_string(
+  let input : @admiral.PositionDef[String] = @admiral.position_string(
     "input",
     description="Input file",
     required=true,
   )
-  let files : PositionDef[Array[String]] = position_strings("files")
-  let count : PositionDef[Int] = position_int("count")
-  let counts : PositionDef[Array[Int]] = position_ints("counts")
+  let files : @admiral.PositionDef[Array[String]] = @admiral.position_strings(
+    "files",
+  )
+  let count : @admiral.PositionDef[Int32] = @admiral.position_int("count")
+  let counts : @admiral.PositionDef[Array[Int32]] = @admiral.position_ints(
+    "counts",
+  )
   inspect(input.name, content="input")
   inspect(input.metadata.required, content="true")
   inspect(input.metadata.multiple, content="false")
@@ -18,14 +22,14 @@ test "position helpers encode scalar and array result types" {
 
 ///|
 test "position helpers retain config keys" {
-  let input = position_string("input", config="input_path")
-  let files = position_strings("files", config="input_files")
+  let input = @admiral.position_string("input", config="input_path")
+  let files = @admiral.position_strings("files", config="input_files")
   debug_inspect(input.config, content="Some(\"input_path\")")
   debug_inspect(files.config, content="Some(\"input_files\")")
 }
 
 ///|
 test "position_string() retains interactive input metadata" {
-  let input = position_string("input", interactive=true)
+  let input = @admiral.position_string("input", interactive=true)
   inspect(input.metadata.interactive, content="true")
 }

@@ -9,7 +9,7 @@ priv struct IgnoreRuleSet {
 
 ///|
 let char_star : UInt16 = {
-  let c : Int = '*'.to_int()
+  let c : Int32 = '*'.to_int()
   c.to_uint16()
 }
 
@@ -35,7 +35,7 @@ async fn read_ignore_rules(dir : String) -> IgnoreRuleSet? {
   if content.trim() == "" {
     None
   } else {
-    Some({ base_dir: dir, patterns: parse_ignore_patterns(content) })
+    Some({ base_dir: dir, patterns: parse_ignore_patterns(content), })
   }
 }
 

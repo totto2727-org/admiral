@@ -1,5 +1,6 @@
 ///|
 /// The scalar value kinds supported by options and positional arguments.
+#derive(Debug, Eq)
 pub enum OptionType {
   StringOpt
   BoolOpt
@@ -8,7 +9,7 @@ pub enum OptionType {
   UIntOpt
   UInt64Opt
   DoubleOpt
-} derive(Debug, Eq)
+}
 
 ///|
 pub impl Show for OptionType with fn output(self, logger) {
@@ -26,6 +27,7 @@ pub impl Show for OptionType with fn output(self, logger) {
 ///|
 /// Metadata used to build and resolve a named option, including its short flag,
 /// environment key, configuration key, required state, and multiplicity.
+#derive(Debug)
 pub struct OptionMetadata {
   type_ : OptionType
   short : Char
@@ -35,26 +37,28 @@ pub struct OptionMetadata {
   default_value : String?
   multiple : Bool
   interactive : Bool
-} derive(Debug)
+}
 
 ///|
 /// Metadata used to build and resolve a positional argument.
+#derive(Debug)
 pub struct PositionMetadata {
   type_ : OptionType
   description : String
   required : Bool
   multiple : Bool
   interactive : Bool
-} derive(Debug)
+}
 
 ///|
 /// Typed, read-only argument definition shared by a parser declaration and its
 /// matching `Context` getter.
+#derive(Debug)
 pub struct ArgDef[_, Metadata] {
   name : String
   config : String?
   metadata : Metadata
-} derive(Debug)
+}
 
 ///|
 /// Typed definition for an option declaration.
@@ -67,11 +71,12 @@ pub type PositionDef[T] = ArgDef[T, PositionMetadata]
 ///|
 /// Non-empty view returned by required plural getters. `first` is the first
 /// value, `rest` is the remaining view, and `all` preserves the full sequence.
+#derive(Debug)
 pub struct NonEmptyArray[T] {
   first : T
   rest : ArrayView[T]
   all : ReadOnlyArray[T]
-} derive(Debug)
+}
 
 ///|
 type StoredOption = ArgDef[Unit, OptionMetadata]
@@ -88,7 +93,7 @@ trait ToStoredOption {
 pub impl[T] ToStoredOption for ArgDef[T, OptionMetadata] with fn to_stored_option(
   self,
 ) {
-  { name: self.name, config: self.config, metadata: self.metadata }
+  { name: self.name, config: self.config, metadata: self.metadata, }
 }
 
 ///|
@@ -100,7 +105,7 @@ trait ToStoredPosition {
 pub impl[T] ToStoredPosition for ArgDef[T, PositionMetadata] with fn to_stored_position(
   self,
 ) {
-  { name: self.name, config: self.config, metadata: self.metadata }
+  { name: self.name, config: self.config, metadata: self.metadata, }
 }
 
 ///|
@@ -120,9 +125,10 @@ pub struct CommandDef {
 ///|
 /// Failure raised by a configuration loader when external configuration cannot
 /// be read or decoded into a map.
+#derive(Debug, Eq)
 pub(all) suberror ConfigLoadFailure {
   ConfigLoadFailure(String)
-} derive(Debug, Eq)
+}
 
 ///|
 pub impl Show for ConfigLoadFailure with fn output(self, logger) {
@@ -147,11 +153,11 @@ pub struct Context {
 /// Creates a context from parser maps and an optional configuration map. The
 /// constructor is useful for embedding or tests that provide explicit matches.
 pub fn Context::Context(
-  flags? : Map[String, Bool] = Map([]),
-  values? : Map[String, Array[String]] = Map([]),
-  sources? : Map[String, @argparse.ValueSource] = Map([]),
-  config? : Map[String, Json] = Map([]),
-  subcommand? : (String, Context)? = None,
+  flags~ : Map[String, Bool] = Map([]),
+  values~ : Map[String, Array[String]] = Map([]),
+  sources~ : Map[String, @argparse.ValueSource] = Map([]),
+  config~ : Map[String, Json] = Map([]),
+  subcommand~ : (String, Context)? = None,
 ) -> Context {
   Context::{
     flags: @immut_hashmap.from_iter(flags.iter()),
@@ -249,8 +255,8 @@ pub fn[Metadata] InteractiveContext::set_strings(
 /// Replaces an integer option or positional with a value selected interactively.
 pub fn[Metadata] InteractiveContext::set_int(
   self : InteractiveContext,
-  argument : ArgDef[Int, Metadata],
-  value : Int,
+  argument : ArgDef[Int32, Metadata],
+  value : Int32,
 ) -> Unit {
   self.values[argument.name] = [value.to_string()]
 }
@@ -259,8 +265,8 @@ pub fn[Metadata] InteractiveContext::set_int(
 /// Replaces repeated integer input with values selected interactively.
 pub fn[Metadata] InteractiveContext::set_ints(
   self : InteractiveContext,
-  argument : ArgDef[Array[Int], Metadata],
-  values : Array[Int],
+  argument : ArgDef[Array[Int32], Metadata],
+  values : Array[Int32],
 ) -> Unit {
   self.values[argument.name] = values.map(value => value.to_string())
 }
@@ -289,8 +295,8 @@ pub fn[Metadata] InteractiveContext::set_int64s(
 /// Replaces an unsigned integer input with a value selected interactively.
 pub fn[Metadata] InteractiveContext::set_uint(
   self : InteractiveContext,
-  argument : ArgDef[UInt, Metadata],
-  value : UInt,
+  argument : ArgDef[UInt32, Metadata],
+  value : UInt32,
 ) -> Unit {
   self.values[argument.name] = [value.to_string()]
 }
@@ -299,8 +305,8 @@ pub fn[Metadata] InteractiveContext::set_uint(
 /// Replaces repeated unsigned integer input with values selected interactively.
 pub fn[Metadata] InteractiveContext::set_uints(
   self : InteractiveContext,
-  argument : ArgDef[Array[UInt], Metadata],
-  values : Array[UInt],
+  argument : ArgDef[Array[UInt32], Metadata],
+  values : Array[UInt32],
 ) -> Unit {
   self.values[argument.name] = values.map(value => value.to_string())
 }
@@ -357,7 +363,7 @@ fn InteractiveContext::InteractiveContext(
   for name, items in context.interactive_values {
     values[name] = items.iter().to_array()
   }
-  { initial: context, flags, values }
+  { initial: context, flags, values, }
 }
 
 ///|

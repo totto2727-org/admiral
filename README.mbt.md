@@ -46,8 +46,12 @@ supported_targets = "js+native+wasm"
 
 import {
   "totto2727/admiral/util/target-file-discovery" @target-file-discovery,
-  "moonbitlang/async",
+  "moonbitlang/core/async",
 }
+
+options(
+  "allow-experimental-packages": [ "moonbitlang/core/async" ],
+)
 ```
 
 For the distinct filesystem helper API, see [target-file-discovery](src/util/target-file-discovery/README.mbt.md).
@@ -93,6 +97,8 @@ The checked [schema-rendering example](src/usage_examples.mbt.md#schema-renderin
 ## Development
 
 For development guidance, see [AGENTS.md](AGENTS.md).
+The Nix shell uses `moonbit-bin.latest` from the official [MoonBit community overlay](https://github.com/moonbit-community/moonbit-overlay).
+The direct CSS, Crater, and terminal-buffer requirements in `moon.mod` raise the TUI dependency graph to releases with current MoonBit manifests.
 
 ## License
 

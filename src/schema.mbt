@@ -212,7 +212,7 @@ impl ToJson for CommandSchema with fn to_json(self) -> Json {
     if options.is_empty() {
       None
     } else {
-      Some(options.to_json())
+      Some(ToJson::to_json(options))
     },
   )
   let positionals : Map[String, Json] = Map([])
@@ -224,7 +224,7 @@ impl ToJson for CommandSchema with fn to_json(self) -> Json {
     if positionals.is_empty() {
       None
     } else {
-      Some(positionals.to_json())
+      Some(ToJson::to_json(positionals))
     },
   )
   command_schema_examples_lens.set_or_abort(
@@ -249,7 +249,7 @@ impl ToJson for CommandSchema with fn to_json(self) -> Json {
     if subcommands.is_empty() {
       None
     } else {
-      Some(subcommands.to_json())
+      Some(ToJson::to_json(subcommands))
     },
   )
   builder.to_json()
@@ -302,7 +302,7 @@ pub impl ToJson for CliApp with fn to_json(self) -> Json {
     if options.is_empty() {
       None
     } else {
-      Some(options.to_json())
+      Some(ToJson::to_json(options))
     },
   )
   let positionals : Map[String, Json] = Map([])
@@ -314,7 +314,7 @@ pub impl ToJson for CliApp with fn to_json(self) -> Json {
     if positionals.is_empty() {
       None
     } else {
-      Some(positionals.to_json())
+      Some(ToJson::to_json(positionals))
     },
   )
   let commands : Map[String, Json] = Map([])
@@ -329,14 +329,14 @@ pub impl ToJson for CliApp with fn to_json(self) -> Json {
     if commands.is_empty() {
       None
     } else {
-      Some(commands.to_json())
+      Some(ToJson::to_json(commands))
     },
   )
   builder.to_json()
 }
 
 ///|
-extend CliApp with ToJson::{to_json}
+pub extend CliApp with ToJson::{to_json}
 
 ///|
 /// Renders the complete CLI definition as a JSON string for documentation and

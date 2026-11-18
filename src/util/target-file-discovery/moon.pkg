@@ -1,10 +1,12 @@
 import {
   "moonbitlang/core/env",
-  "moonbitlang/core/string",
   "moonbitlang/x/path",
-  "moonbitlang/async",
-  "moonbitlang/async/io",
+  "moonbitlang/core/async",
   "mizchi/x/fs",
 }
 
 supported_targets = "js+native+wasm"
+
+options(
+  "allow-experimental-packages": [ "moonbitlang/core/async" ],
+)

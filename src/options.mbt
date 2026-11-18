@@ -37,13 +37,13 @@ fn[T] option_def(
 /// select independent environment and configuration keys.
 pub fn string(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  default? : String? = None,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  default~ : String? = None,
+  interactive~ : Bool = false,
 ) -> OptionDef[String] {
   option_def(
     name,
@@ -64,12 +64,12 @@ pub fn string(
 /// `Context::get_strings`; configuration values must be JSON arrays.
 pub fn strings(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> OptionDef[Array[String]] {
   option_def(
     name,
@@ -90,11 +90,11 @@ pub fn strings(
 /// values use the boolean literals accepted by `core/argparse`.
 pub fn bool(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  interactive? : Bool = false,
+  interactive~ : Bool = false,
 ) -> OptionDef[Bool] {
   option_def(
     name,
@@ -115,14 +115,14 @@ pub fn bool(
 /// validation.
 pub fn int(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  default? : Int? = None,
-  interactive? : Bool = false,
-) -> OptionDef[Int] {
+  required~ : Bool = false,
+  default~ : Int32? = None,
+  interactive~ : Bool = false,
+) -> OptionDef[Int32] {
   option_def(
     name,
     config,
@@ -142,13 +142,13 @@ pub fn int(
 /// all values after parsing.
 pub fn ints(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
-) -> OptionDef[Array[Int]] {
+  required~ : Bool = false,
+  interactive~ : Bool = false,
+) -> OptionDef[Array[Int32]] {
   option_def(
     name,
     config,
@@ -167,13 +167,13 @@ pub fn ints(
 /// Defines a scalar 64-bit signed integer option.
 pub fn int64(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  default? : Int64? = None,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  default~ : Int64? = None,
+  interactive~ : Bool = false,
 ) -> OptionDef[Int64] {
   option_def(
     name,
@@ -193,12 +193,12 @@ pub fn int64(
 /// Defines a repeated 64-bit signed integer option.
 pub fn int64s(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> OptionDef[Array[Int64]] {
   option_def(
     name,
@@ -218,14 +218,14 @@ pub fn int64s(
 /// Defines a scalar unsigned integer option.
 pub fn uint(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  default? : UInt? = None,
-  interactive? : Bool = false,
-) -> OptionDef[UInt] {
+  required~ : Bool = false,
+  default~ : UInt32? = None,
+  interactive~ : Bool = false,
+) -> OptionDef[UInt32] {
   option_def(
     name,
     config,
@@ -244,13 +244,13 @@ pub fn uint(
 /// Defines a repeated unsigned integer option.
 pub fn uints(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
-) -> OptionDef[Array[UInt]] {
+  required~ : Bool = false,
+  interactive~ : Bool = false,
+) -> OptionDef[Array[UInt32]] {
   option_def(
     name,
     config,
@@ -269,13 +269,13 @@ pub fn uints(
 /// Defines a scalar 64-bit unsigned integer option.
 pub fn uint64(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  default? : UInt64? = None,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  default~ : UInt64? = None,
+  interactive~ : Bool = false,
 ) -> OptionDef[UInt64] {
   option_def(
     name,
@@ -295,12 +295,12 @@ pub fn uint64(
 /// Defines a repeated 64-bit unsigned integer option.
 pub fn uint64s(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> OptionDef[Array[UInt64]] {
   option_def(
     name,
@@ -320,13 +320,13 @@ pub fn uint64s(
 /// Defines a scalar double-precision floating-point option.
 pub fn double(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  default? : Double? = None,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  default~ : Double? = None,
+  interactive~ : Bool = false,
 ) -> OptionDef[Double] {
   option_def(
     name,
@@ -346,12 +346,12 @@ pub fn double(
 /// Defines a repeated double-precision floating-point option.
 pub fn doubles(
   name : String,
-  short? : Char = '\u0000',
-  description? : String = "",
+  short~ : Char = '\u0000',
+  description~ : String = "",
   env? : String,
   config? : String,
-  required? : Bool = false,
-  interactive? : Bool = false,
+  required~ : Bool = false,
+  interactive~ : Bool = false,
 ) -> OptionDef[Array[Double]] {
   option_def(
     name,

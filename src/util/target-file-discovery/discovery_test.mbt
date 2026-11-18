@@ -25,7 +25,10 @@ async test "find_home_target_file finds direct home file" {
   let root = @fs.tmpdir(prefix="target-file-discovery-home-")
   let home_dir = @path.Path::join(root, "home").to_string()
   let target = write_target_file(home_dir, "target.lock")
-  inspect(find_home_target_file(home_dir, "target.lock"), content=target)
+  inspect(
+    @target-file-discovery.find_home_target_file(home_dir, "target.lock"),
+    content=target,
+  )
   @fs.rmdir(root, recursive=true)
 }
 
@@ -43,7 +46,9 @@ async test "find_parent_target_file finds target in start directory" {
   |> @path.Path::join("pkg-a")).to_string()
   let target = write_target_file(start_dir, "target.lock")
   inspect(
-    find_parent_target_file("target.lock", root, start_dir),
+    @target-file-discovery.find_parent_target_file(
+      "target.lock", root, start_dir,
+    ),
     content=target,
   )
   @fs.rmdir(root, recursive=true)
@@ -62,7 +67,9 @@ async test "find_parent_target_file finds nearest ancestor within boundary" {
   |> @path.Path::join("feature")).to_string()
   @fs.mkdir(start_dir, recursive=true)
   inspect(
-    find_parent_target_file("target.lock", root, start_dir),
+    @target-file-discovery.find_parent_target_file(
+      "target.lock", root, start_dir,
+    ),
     content=package_target,
   )
   @fs.rmdir(root, recursive=true)
@@ -83,7 +90,9 @@ async test "find_parent_target_file accepts target at top boundary" {
   |> @path.Path::join("pkg-a")).to_string()
   @fs.mkdir(start_dir, recursive=true)
   inspect(
-    find_parent_target_file("target.lock", root, start_dir),
+    @target-file-discovery.find_parent_target_file(
+      "target.lock", root, start_dir,
+    ),
     content=top_target,
   )
   @fs.rmdir(root, recursive=true)
@@ -111,7 +120,9 @@ async test "collect_recursive_target_files collects start and descendants" {
     |> @path.Path::join("demo")).to_string(),
     "target.lock",
   )
-  let files = collect_recursive_target_files(root, "target.lock")
+  let files = @target-file-discovery.collect_recursive_target_files(
+    root, "target.lock",
+  )
   assert_true(files.contains(root_target))
   assert_true(files.contains(child_target))
   assert_true(files.contains(grandchild_target))
@@ -134,9 +145,10 @@ async test "collect_recursive_target_files preserves sorted depth-first order" {
     @path.Path::join(root, "b-second").to_string(),
     "target.lock",
   )
-  json_inspect(collect_recursive_target_files(root, "target.lock"), content=[
-    root_target, first_target, nested_target, second_target,
-  ])
+  json_inspect(
+    @target-file-discovery.collect_recursive_target_files(root, "target.lock"),
+    content=[root_target, first_target, nested_target, second_target],
+  )
   @fs.rmdir(root, recursive=true)
 }
 
@@ -151,7 +163,9 @@ async test "collect_recursive_target_files uses only gitignore rules for skip de
     |> @path.Path::join("repo")).to_string(),
     "target.lock",
   )
-  let files = collect_recursive_target_files(root, "target.lock")
+  let files = @target-file-discovery.collect_recursive_target_files(
+    root, "target.lock",
+  )
   assert_true(files.contains(root_target))
   assert_true(files.contains(dot_agents_target))
   @fs.rmdir(root, recursive=true)
@@ -170,7 +184,9 @@ async test "collect_recursive_target_files honors literal gitignore directory ru
     (root |> @path.Path::join("packages") |> @path.Path::join("pkg-a")).to_string(),
     "target.lock",
   )
-  let files = collect_recursive_target_files(root, "target.lock")
+  let files = @target-file-discovery.collect_recursive_target_files(
+    root, "target.lock",
+  )
   assert_true(files.contains(root_target))
   assert_true(files.contains(visible_target))
   assert_false(files.contains(ignored_target))
@@ -190,7 +206,9 @@ async test "collect_recursive_target_files trims anchored gitignore directory pa
     (root |> @path.Path::join("packages") |> @path.Path::join("pkg-a")).to_string(),
     "target.lock",
   )
-  let files = collect_recursive_target_files(root, "target.lock")
+  let files = @target-file-discovery.collect_recursive_target_files(
+    root, "target.lock",
+  )
   assert_true(files.contains(root_target))
   assert_true(files.contains(visible_target))
   assert_false(files.contains(ignored_target))
@@ -209,7 +227,9 @@ async test "collect_recursive_target_files ignores blank and comment gitignore l
     (root |> @path.Path::join("visible-ignored") |> @path.Path::join("pkg-a")).to_string(),
     "target.lock",
   )
-  let files = collect_recursive_target_files(root, "target.lock")
+  let files = @target-file-discovery.collect_recursive_target_files(
+    root, "target.lock",
+  )
   assert_true(files.contains(commented_target))
   assert_false(files.contains(ignored_target))
   @fs.rmdir(root, recursive=true)
@@ -227,7 +247,9 @@ async test "collect_recursive_target_files supports simple star directory patter
     (root |> @path.Path::join("packages") |> @path.Path::join("pkg-a")).to_string(),
     "target.lock",
   )
-  let files = collect_recursive_target_files(root, "target.lock")
+  let files = @target-file-discovery.collect_recursive_target_files(
+    root, "target.lock",
+  )
   assert_true(files.contains(visible_target))
   assert_false(files.contains(ignored_target))
   @fs.rmdir(root, recursive=true)
@@ -254,7 +276,9 @@ async test "collect_recursive_target_files inherits parent gitignore rules for g
     |> @path.Path::join("ignored-demo")).to_string(),
     "target.lock",
   )
-  let files = collect_recursive_target_files(root, "target.lock")
+  let files = @target-file-discovery.collect_recursive_target_files(
+    root, "target.lock",
+  )
   assert_true(files.contains(root_target))
   assert_true(files.contains(package_target))
   assert_true(files.contains(visible_demo_target))
@@ -271,7 +295,9 @@ async test "collect_recursive_target_files includes target files ignored by loca
     (root |> @path.Path::join("packages") |> @path.Path::join("pkg-a")).to_string(),
     "target.lock",
   )
-  let files = collect_recursive_target_files(root, "target.lock")
+  let files = @target-file-discovery.collect_recursive_target_files(
+    root, "target.lock",
+  )
   assert_true(files.contains(ignored_root_target))
   assert_true(files.contains(child_target))
   @fs.rmdir(root, recursive=true)
