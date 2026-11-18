@@ -70,6 +70,7 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 
 ## Package-specific rules
 
+- Place trait extensions with their type or trait implementation. Do not collect unrelated declarations in `extensions.mbt`.
 - Use the registry-first API policy: link README users to [Mooncakes Admiral API docs](https://mooncakes.io/docs/totto2727/admiral), and keep behavior, constraints, and representative examples in `///` docs or `src/examples/`.
 - Preserve the physical root `README.mbt.md` module overview and the relative root `README.md -> README.mbt.md` alias.
 - Keep the `totto2727/admiral` consumer guide at the root and the separate target-file-discovery package guide in `src/util/target-file-discovery/README.mbt.md`.

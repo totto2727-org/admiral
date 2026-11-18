@@ -12,6 +12,15 @@ pub enum OptionType {
 }
 
 ///|
+pub extend OptionType with Debug::{to_repr}
+
+///|
+pub extend OptionType with Eq::{not_equal, equal}
+
+///|
+pub extend OptionType with Show::{to_string, output}
+
+///|
 pub impl Show for OptionType with fn output(self, logger) {
   match self {
     StringOpt => logger.write_string("StringOpt")
@@ -40,6 +49,9 @@ pub struct OptionMetadata {
 }
 
 ///|
+pub extend OptionMetadata with Debug::{to_repr}
+
+///|
 /// Metadata used to build and resolve a positional argument.
 #derive(Debug)
 pub struct PositionMetadata {
@@ -51,6 +63,9 @@ pub struct PositionMetadata {
 }
 
 ///|
+pub extend PositionMetadata with Debug::{to_repr}
+
+///|
 /// Typed, read-only argument definition shared by a parser declaration and its
 /// matching `Context` getter.
 #derive(Debug)
@@ -59,6 +74,9 @@ pub struct ArgDef[_, Metadata] {
   config : String?
   metadata : Metadata
 }
+
+///|
+pub extend ArgDef with Debug::{to_repr}
 
 ///|
 /// Typed definition for an option declaration.
@@ -77,6 +95,9 @@ pub struct NonEmptyArray[T] {
   rest : ArrayView[T]
   all : ReadOnlyArray[T]
 }
+
+///|
+pub extend NonEmptyArray with Debug::{to_repr}
 
 ///|
 type StoredOption = ArgDef[Unit, OptionMetadata]
@@ -129,6 +150,15 @@ pub struct CommandDef {
 pub(all) suberror ConfigLoadFailure {
   ConfigLoadFailure(String)
 }
+
+///|
+pub extend ConfigLoadFailure with Debug::{to_repr}
+
+///|
+pub extend ConfigLoadFailure with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigLoadFailure with Show::{to_string, output}
 
 ///|
 pub impl Show for ConfigLoadFailure with fn output(self, logger) {
