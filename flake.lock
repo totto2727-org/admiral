@@ -8,11 +8,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1794645942,
-        "narHash": "sha256-IZpHUdqLkbe4SEBpt9IzKz563bMiiXLsWUQgEhHjyGA=",
+        "lastModified": 1794995662,
+        "narHash": "sha256-PYSzFIMzGu1v03+h9vQexHItOk4Uw1SaFHyJwq0NmYM=",
         "owner": "moonbit-community",
         "repo": "moonbit-overlay",
-        "rev": "654060dff5fc865113bfc98cdd08b955f94b9535",
+        "rev": "c53b82559bb57d9a3393c3b02165efbac045ad96",
         "type": "github"
       },
       "original": {
