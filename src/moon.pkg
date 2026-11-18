@@ -6,6 +6,7 @@ import {
   "moonbitlang/core/immut/hashmap" @immut_hashmap,
   "moonbitlang/core/json",
   "moonbitlang/core/string",
+  "totto2727/tui/io" @tui_io,
   "totto2727/lens",
 }
 
@@ -16,7 +17,3 @@ import {
 import {
   "moonbitlang/async",
 } for "wbtest"
-
-options(
-  "native-stub": [ "tty.c" ],
-)
