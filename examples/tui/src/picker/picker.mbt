@@ -1,5 +1,5 @@
 ///|
-struct Project {
+priv struct Project {
   name : String
   description : String
 }
@@ -165,42 +165,53 @@ async fn select_project(
 }
 
 ///|
-async fn main {
-  let project = @admiral.position_string(
-    "project",
-    description="Project selected by name",
-    required=true,
-    interactive=true,
-  )
-  let query = @admiral.string(
-    "query",
-    short='q',
-    description="Initial project search",
-    env="ADMIRAL_PROJECT_QUERY",
-    default=Some(""),
-    interactive=true,
-  )
-  let app = @admiral.CliApp::CliApp(
-    name="interactive-project",
-    version="0.1.0",
-    description="Admiral interactive project search example",
-    positionals=[project],
-    options=[query],
-    interactive=Some(input => {
-      let initial = input.to_context()
-      match
-        select_project(
-          initial.get_string(project),
-          initial.get_string(query).unwrap_or(""),
-        ) {
-        Some(selected) => input.set_string(project, selected)
-        None => fail("project selection cancelled")
-      }
-    }),
-    run=Some(ctx => {
-      let selected = ctx.get_string_required(project)
-      println("Selected project: " + selected)
-    }),
-  )
-  app.run()
+/// An editor could not resolve a project without terminal input.
+pub(all) suberror ProjectQueryError {
+  NoProjectMatch(String)
+  AmbiguousProjectQuery(String)
+}
+
+///|
+pub impl Show for ProjectQueryError with fn output(self, logger) {
+  match self {
+    NoProjectMatch(query) =>
+      logger.write_string("no projects match query '\{query}'")
+    AmbiguousProjectQuery(query) =>
+      logger.write_string(
+        "multiple projects match query '\{query}'. Pass the project explicitly.",
+      )
+  }
+}
+
+///|
+fn resolve_without_terminal(
+  initial : String?,
+  query : String,
+) -> String? raise ProjectQueryError {
+  if initial is Some(_) || query.is_empty() {
+    return None
+  }
+  match search_projects(query) {
+    [project] => Some(project.name)
+    [] => raise NoProjectMatch(query)
+    _ => raise AmbiguousProjectQuery(query)
+  }
+}
+
+///|
+/// Uses the query for initial filtering in a terminal, or selects a unique
+/// match without prompting when no project was explicitly supplied.
+pub fn project_picker(
+  query : @admiral.OptionDef[String],
+) -> @admiral.FieldEditor[String] {
+  (ctx, initial) => {
+    let initial_query = ctx.get_string(query).unwrap_or("")
+    if !@io.is_tty() {
+      return resolve_without_terminal(initial, initial_query)
+    }
+    match select_project(initial, initial_query) {
+      Some(selected) => Some(selected)
+      None => fail("project selection cancelled")
+    }
+  }
 }

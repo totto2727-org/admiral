@@ -8,7 +8,6 @@ pub fn CommandDef::CommandDef(
   positionals~ : Array[&ToStoredPosition] = [],
   examples~ : Array[String] = [],
   subcommands~ : Array[CommandDef] = [],
-  interactive~ : (async (InteractiveContext) -> Unit)? = None,
   run~ : (async (Context) -> Unit)? = None,
 ) -> CommandDef {
   let options = options.map(fn(option) {
@@ -17,16 +16,7 @@ pub fn CommandDef::CommandDef(
   let positionals = positionals.map(fn(position) {
     ToStoredPosition::to_stored_position(position)
   })
-  {
-    name,
-    description,
-    options,
-    positionals,
-    examples,
-    subcommands,
-    interactive,
-    run,
-  }
+  { name, description, options, positionals, examples, subcommands, run, }
 }
 
 ///|
@@ -40,7 +30,6 @@ pub fn CliApp::CliApp(
   options~ : Array[&ToStoredOption] = [],
   positionals~ : Array[&ToStoredPosition] = [],
   commands~ : Array[CommandDef] = [],
-  interactive~ : (async (InteractiveContext) -> Unit)? = None,
   run~ : (async (Context) -> Unit)? = None,
   load_config~ : (() -> Map[String, Json] raise ConfigLoadFailure)? = None,
 ) -> CliApp {
@@ -57,7 +46,6 @@ pub fn CliApp::CliApp(
     root_options,
     root_positionals,
     commands,
-    interactive,
     run,
     load_config,
   }
@@ -108,9 +96,8 @@ fn find_command_def(commands : Array[CommandDef], name : String) -> CommandDef? 
 fn build_root_command(
   app : CliApp,
   config : Map[String, Json],
-  interactive_environment~ : Bool = false,
+  edit_fields~ : Bool = false,
 ) -> @argparse.Command {
-  let interactive = interactive_environment && app.interactive is Some(_)
   let flags : Array[@argparse.FlagArg] = []
   let options : Array[@argparse.OptionArg] = []
   for opt in app.root_options {
@@ -118,15 +105,15 @@ fn build_root_command(
       BoolOpt => flags.push(build_option_to_flag(opt, global=true))
       StringOpt | IntOpt | Int64Opt | UIntOpt | UInt64Opt | DoubleOpt =>
         options.push(
-          build_option_to_option_arg(opt, config, interactive~, global=true),
+          build_option_to_option_arg(opt, config, edit_fields~, global=true),
         )
     }
   }
   let subcommands = app.commands.map(fn(c) {
-    build_command_with_config(c, config, interactive_environment~)
+    build_command_with_config(c, config, edit_fields~)
   })
   let positionals = app.root_positionals.map(fn(position) {
-    build_position(position, config, interactive~)
+    build_position(position, config, edit_fields~)
   })
   @argparse.Command(
     app.name,
@@ -150,69 +137,44 @@ fn print_help(command : @argparse.Command) -> Unit {
 }
 
 ///|
-fn has_interactive_arguments(
-  options : Array[StoredOption],
-  positionals : Array[StoredPosition],
-) -> Bool {
-  for option in options {
-    if option.metadata.interactive {
-      return true
-    }
-  }
-  for position in positionals {
-    if position.metadata.interactive {
-      return true
-    }
-  }
-  false
-}
-
-///|
-async fn apply_interactive_input(
+async fn apply_field_editors(
   context : Context,
   options : Array[StoredOption],
   positionals : Array[StoredPosition],
-  interactive : (async (InteractiveContext) -> Unit)?,
-  interactive_environment : Bool,
+  global_options : Bool,
 ) -> Context {
-  if !interactive_environment ||
-    !has_interactive_arguments(options, positionals) {
-    return context
-  }
-  match interactive {
-    Some(run_interactive) => {
-      let input = InteractiveContext::InteractiveContext(context)
-      run_interactive(input)
-      input.to_context()
+  let mut ctx = context
+  for option in options {
+    if option.editor is Some(editor) {
+      ctx = (editor.apply)(ctx, global_options)
     }
-    None => context
   }
+  for position in positionals {
+    if position.editor is Some(editor) {
+      ctx = (editor.apply)(ctx, false)
+    }
+  }
+  ctx
 }
 
 ///|
-async fn execute_command(
-  commands : Array[CommandDef],
-  ctx : Context,
-  interactive_environment : Bool,
-) -> Unit {
+async fn execute_command(commands : Array[CommandDef], ctx : Context) -> Unit {
   match ctx.subcommand {
     Some((name, sub_ctx)) =>
       match find_command_def(commands, name) {
-        Some(cmd) =>
-          if cmd.subcommands.length() > 0 && sub_ctx.subcommand is Some(_) {
-            execute_command(cmd.subcommands, sub_ctx, interactive_environment)
+        Some(cmd) => {
+          let command_context = apply_field_editors(
+            sub_ctx,
+            cmd.options,
+            cmd.positionals,
+            false,
+          )
+          if cmd.subcommands.length() > 0 &&
+            command_context.subcommand is Some(_) {
+            execute_command(cmd.subcommands, command_context)
           } else {
             match cmd.run {
-              Some(run_fn) => {
-                let command_context = apply_interactive_input(
-                  sub_ctx,
-                  cmd.options,
-                  cmd.positionals,
-                  cmd.interactive,
-                  interactive_environment,
-                )
-                run_fn(command_context)
-              }
+              Some(run_fn) => run_fn(command_context)
               None => {
                 let subs = cmd.subcommands.map(fn(c) { c.name }).join(", ")
                 fail(
@@ -221,6 +183,7 @@ async fn execute_command(
               }
             }
           }
+        }
         None => fail("unknown command: " + name)
       }
     None => fail("no command specified. Use --help for usage.")
@@ -228,9 +191,10 @@ async fn execute_command(
 }
 
 ///|
-async fn CliApp::run_with_interactive_environment(
+/// Resolves values, runs the registered field editors, then executes the command.
+/// Fields without an editor do not trigger input. Editors do not require a TTY.
+pub async fn CliApp::run(
   self : CliApp,
-  interactive_environment : Bool,
   argv~ : Array[String]? = None,
   env~ : Map[String, String] = @env.get_env_vars(),
 ) -> Unit {
@@ -238,35 +202,24 @@ async fn CliApp::run_with_interactive_environment(
     Some(load_config) => load_config()
     None => Map([])
   }
-  let argparse_cmd = build_root_command(self, config, interactive_environment~)
+  let argparse_cmd = build_root_command(self, config, edit_fields=true)
   let matches = match argv {
     Some(args) => argparse_cmd.parse(argv=args, env~)
     None => argparse_cmd.parse(argv=process_arguments(), env~)
   }
   let ctx = matches_to_context(matches, config)
-  let root_context = apply_interactive_input(
+  if ctx.subcommand is None && self.run is None {
+    return print_help(argparse_cmd)
+  }
+  let root_context = apply_field_editors(
     ctx,
     self.root_options,
     self.root_positionals,
-    self.interactive,
-    interactive_environment,
+    true,
   )
   match (root_context.subcommand, self.run) {
-    (Some(_), _) =>
-      execute_command(self.commands, root_context, interactive_environment)
+    (Some(_), _) => execute_command(self.commands, root_context)
     (None, Some(run)) => run(root_context)
-    (None, None) => print_help(argparse_cmd)
+    (None, None) => ()
   }
-}
-
-///|
-/// Parses inputs and runs the selected callback, invoking interactive input only
-/// when at least one selected definition opts in and an input TTY is available.
-pub async fn CliApp::run(
-  self : CliApp,
-  argv~ : Array[String]? = None,
-  env~ : Map[String, String] = @env.get_env_vars(),
-) -> Unit {
-  // TODO: On JavaScript, uncaught errors from moonbitlang/async's top-level runner currently exit without output or a non-zero status.
-  self.run_with_interactive_environment(@tui_io.is_tty(), argv~, env~)
 }

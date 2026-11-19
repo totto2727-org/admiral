@@ -1,19 +1,17 @@
-supported_targets = "js+native"
+supported_targets = "js+native+wasm"
 
 import {
   "moonbitlang/core/argparse",
+  "moonbitlang/core/debug",
   "moonbitlang/core/env",
   "moonbitlang/core/immut/hashmap" @immut_hashmap,
   "moonbitlang/core/json",
   "moonbitlang/core/string",
-  "totto2727/tui/io" @tui_io,
+  "totto2727/admiral/interactive",
   "totto2727/lens",
 }
 
 import {
   "moonbitlang/async",
+  "totto2727/admiral/interactive",
 } for "test"
-
-import {
-  "moonbitlang/async",
-} for "wbtest"

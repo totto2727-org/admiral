@@ -6,24 +6,34 @@ fn[T] position_def(
   description : String,
   required : Bool,
   multiple : Bool,
-  interactive : Bool,
+  interactive : FieldEditor[T]?,
+  read : (Context, PositionDef[T]) -> T? raise,
+  write : (Context, String, T, Bool) -> Context,
 ) -> PositionDef[T] {
-  {
+  let field : PositionDef[T] = {
     name,
     config,
-    metadata: { type_, description, required, multiple, interactive, },
+    metadata: {
+      type_,
+      description,
+      required,
+      multiple,
+      interactive: interactive is Some(_),
+    },
+    editor: None,
   }
+  { ..field, editor: field_edit(field, interactive, read, write, required), }
 }
 
 ///|
-/// Defines a scalar string positional argument. A required position is checked
-/// by the parser unless an interactive callback or configured value supplies it.
+/// Defines a scalar string positional argument. A required position can be
+/// supplied by a configured value or a registered field editor.
 pub fn position_string(
   name : String,
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[String],
 ) -> PositionDef[String] {
   position_def(
     name,
@@ -33,6 +43,8 @@ pub fn position_string(
     required,
     false,
     interactive,
+    (ctx, field) => ctx.get_string(field),
+    write_string,
   )
 }
 
@@ -44,7 +56,7 @@ pub fn position_strings(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[String]],
 ) -> PositionDef[Array[String]] {
   position_def(
     name,
@@ -54,6 +66,8 @@ pub fn position_strings(
     required,
     true,
     interactive,
+    (ctx, field) => nonempty(ctx.get_strings(field)),
+    write_strings,
   )
 }
 
@@ -64,9 +78,19 @@ pub fn position_int(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Int32],
 ) -> PositionDef[Int32] {
-  position_def(name, config, IntOpt, description, required, false, interactive)
+  position_def(
+    name,
+    config,
+    IntOpt,
+    description,
+    required,
+    false,
+    interactive,
+    Context::get_int,
+    write_scalar,
+  )
 }
 
 ///|
@@ -76,9 +100,19 @@ pub fn position_ints(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[Int32]],
 ) -> PositionDef[Array[Int32]] {
-  position_def(name, config, IntOpt, description, required, true, interactive)
+  position_def(
+    name,
+    config,
+    IntOpt,
+    description,
+    required,
+    true,
+    interactive,
+    (ctx, field) => nonempty(ctx.get_ints(field)),
+    write_array,
+  )
 }
 
 ///|
@@ -88,7 +122,7 @@ pub fn position_int64(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Int64],
 ) -> PositionDef[Int64] {
   position_def(
     name,
@@ -98,6 +132,8 @@ pub fn position_int64(
     required,
     false,
     interactive,
+    Context::get_int64,
+    write_scalar,
   )
 }
 
@@ -108,9 +144,19 @@ pub fn position_int64s(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[Int64]],
 ) -> PositionDef[Array[Int64]] {
-  position_def(name, config, Int64Opt, description, required, true, interactive)
+  position_def(
+    name,
+    config,
+    Int64Opt,
+    description,
+    required,
+    true,
+    interactive,
+    (ctx, field) => nonempty(ctx.get_int64s(field)),
+    write_array,
+  )
 }
 
 ///|
@@ -120,9 +166,19 @@ pub fn position_uint(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[UInt32],
 ) -> PositionDef[UInt32] {
-  position_def(name, config, UIntOpt, description, required, false, interactive)
+  position_def(
+    name,
+    config,
+    UIntOpt,
+    description,
+    required,
+    false,
+    interactive,
+    Context::get_uint,
+    write_scalar,
+  )
 }
 
 ///|
@@ -132,9 +188,19 @@ pub fn position_uints(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[UInt32]],
 ) -> PositionDef[Array[UInt32]] {
-  position_def(name, config, UIntOpt, description, required, true, interactive)
+  position_def(
+    name,
+    config,
+    UIntOpt,
+    description,
+    required,
+    true,
+    interactive,
+    (ctx, field) => nonempty(ctx.get_uints(field)),
+    write_array,
+  )
 }
 
 ///|
@@ -144,7 +210,7 @@ pub fn position_uint64(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[UInt64],
 ) -> PositionDef[UInt64] {
   position_def(
     name,
@@ -154,6 +220,8 @@ pub fn position_uint64(
     required,
     false,
     interactive,
+    Context::get_uint64,
+    write_scalar,
   )
 }
 
@@ -164,7 +232,7 @@ pub fn position_uint64s(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[UInt64]],
 ) -> PositionDef[Array[UInt64]] {
   position_def(
     name,
@@ -174,6 +242,8 @@ pub fn position_uint64s(
     required,
     true,
     interactive,
+    (ctx, field) => nonempty(ctx.get_uint64s(field)),
+    write_array,
   )
 }
 
@@ -184,7 +254,7 @@ pub fn position_double(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Double],
 ) -> PositionDef[Double] {
   position_def(
     name,
@@ -194,6 +264,8 @@ pub fn position_double(
     required,
     false,
     interactive,
+    Context::get_double,
+    write_scalar,
   )
 }
 
@@ -204,7 +276,7 @@ pub fn position_doubles(
   description~ : String = "",
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[Double]],
 ) -> PositionDef[Array[Double]] {
   position_def(
     name,
@@ -214,5 +286,7 @@ pub fn position_doubles(
     required,
     true,
     interactive,
+    (ctx, field) => nonempty(ctx.get_doubles(field)),
+    write_array,
   )
 }

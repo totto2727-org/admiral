@@ -1,0 +1,8 @@
+supported_targets = "js+native"
+
+import {
+  "moonbitlang/async",
+  "totto2727/admiral",
+  "totto2727/tui",
+  "totto2727/tui/io",
+}

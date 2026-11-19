@@ -5,7 +5,9 @@
 ```text
 src/*.mbt                         Public Admiral implementation and tests
 src/usage_examples.mbt.md         Checked examples linked from the root README
-src/examples/                     End-user CLI and interactive examples
+src/examples/                     End-user CLI examples
+src/interactive/                  Portable field editor contract
+examples/tui/                     Separate module for the terminal picker example
 src/util/target-file-discovery/   Filesystem target-file helper package and README
 README.mbt.md                     Physical canonical module overview
 README.md                         Relative symbolic link to README.mbt.md
@@ -33,6 +35,8 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 - `nix develop --command moon test src/usage_examples.mbt.md` — Run the executable examples linked from the root README in their owning package.
 - `nix develop --command moon test src/util/target-file-discovery/README.mbt.md` — Run the checked target discovery README examples in its package.
 - `nix develop --command moon test` — Run package, blackbox, whitebox, and documentation tests.
+- `nix develop --command moon test --target wasm` — Run the CLI and field editor tests on linear Wasm.
+- `nix develop --command moon -C examples check --target native ./tui/src/main` — Check the optional terminal picker and its adapter.
 - `nix develop --command moon package --list` — Confirm the packages included in publication.
 - `nix develop --command nix flake check --all-systems --no-build` — Validate the flake without building its outputs.
 
@@ -41,19 +45,20 @@ flake.nix                         Reproducible MoonBit and Node.js development s
 ### Declarative CLI model
 
 - `OptionDef` and `PositionDef` keep a typed definition shared between parser declarations and `Context` getters.
-- `CommandDef` describes options, positions, nested commands, examples, interactive input, and async execution.
+- `CommandDef` describes options, positions, nested commands, examples, and async execution.
 - `CliApp` builds on `moonbitlang/core/argparse`, resolves `argv > env > config > default`, and dispatches callbacks.
 
 ### Runtime surfaces
 
-- Interactive callbacks run only when selected definitions opt in and a TTY is available; typed setters override values before execution.
+- Option and positional definitions can each register an editor. Editors receive resolved input and return a typed value for that field only.
+- TTY detection and `totto2727/tui` belong to the separate example module, never to the core or portable editor package.
 - Schema rendering and `ToJson` expose the complete CLI definition for tooling, while completion methods emit Bash, Zsh, and Fish scripts.
 - `util/target-file-discovery` is a separate filesystem helper package with native, JavaScript, and Wasm support through `mizchi/x`.
 
 ### Target policy
 
-- The module metadata supports `js+native+wasm` because the target discovery helper includes Wasm support; JavaScript remains preferred.
-- The published `src` CLI package supports `js+native`; asynchronous callbacks use `moonbitlang/async`.
+- The CLI, editor contract, and target discovery helper support `js+native+wasm`. JavaScript remains preferred.
+- The optional TUI example supports `js+native`.
 
 ### Package ownership
 
