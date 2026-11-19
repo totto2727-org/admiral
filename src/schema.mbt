@@ -12,148 +12,120 @@ fn option_type_to_string(t : OptionType) -> String {
 }
 
 ///|
+#custom.serde(encode_only)
 priv struct OptionSchema {
-  option : StoredOption
+  #custom.serde(rename="type")
+  kind : String
+  description : String
+  required : Bool
+  multiple : Bool
+  interactive : Bool
+  #custom.serde(skip_serializing_if="Option::is_none")
+  style : String?
+  #custom.serde(skip_serializing_if="Option::is_none")
+  short : String?
+  #custom.serde(skip_serializing_if="Option::is_none")
+  env : String?
+  #custom.serde(skip_serializing_if="Option::is_none")
+  config : String?
+  #custom.serde(rename="default", skip_serializing_if="Option::is_none")
+  default_value : String?
 }
 
 ///|
-let option_schema_type_lens : @lens.Lens[String] = @lens.root().string("type")
-
-///|
-let option_schema_description_lens : @lens.Lens[String] = @lens.root().string(
-  "description",
-)
-
-///|
-let option_schema_required_lens : @lens.Lens[Bool] = @lens.root().bool(
-  "required",
-)
-
-///|
-let option_schema_multiple_lens : @lens.Lens[Bool] = @lens.root().bool(
-  "multiple",
-)
-
-///|
-let option_schema_interactive_lens : @lens.Lens[Bool] = @lens.root().bool(
-  "interactive",
-)
-
-///|
-let option_schema_style_lens : @lens.PresenceLens[String] = @lens.root()
-  .string("style")
-  .optional()
-
-///|
-let option_schema_short_lens : @lens.PresenceLens[String] = @lens.root()
-  .string("short")
-  .optional()
-
-///|
-let option_schema_env_lens : @lens.PresenceLens[String] = @lens.root()
-  .string("env")
-  .optional()
-
-///|
-let option_schema_config_lens : @lens.PresenceLens[String] = @lens.root()
-  .string("config")
-  .optional()
-
-///|
-let option_schema_default_lens : @lens.PresenceLens[String] = @lens.root()
-  .string("default")
-  .optional()
-
-///|
-impl ToJson for OptionSchema with fn to_json(self) -> Json {
-  let option = self.option
-  let metadata = option.metadata
-  let builder = @lens.JsonBuilder::JsonBuilder()
-  option_schema_type_lens.set_or_abort(
-    builder,
-    option_type_to_string(metadata.type_),
-  )
-  option_schema_description_lens.set_or_abort(builder, metadata.description)
-  option_schema_required_lens.set_or_abort(builder, metadata.required)
-  option_schema_multiple_lens.set_or_abort(builder, metadata.multiple)
-  option_schema_interactive_lens.set_or_abort(builder, metadata.interactive)
-  option_schema_style_lens.set_or_abort(
-    builder,
-    if metadata.type_ == BoolOpt {
-      Some("flag")
-    } else {
-      None
-    },
-  )
-  option_schema_short_lens.set_or_abort(
-    builder,
-    if metadata.short != no_short {
-      Some(metadata.short.to_string())
-    } else {
-      None
-    },
-  )
-  option_schema_env_lens.set_or_abort(builder, metadata.env)
-  option_schema_config_lens.set_or_abort(builder, option.config)
-  option_schema_default_lens.set_or_abort(builder, metadata.default_value)
-  builder.to_json()
-}
-
-///|
-extend OptionSchema with ToJson::{to_json}
-
-///|
+#custom.serde(encode_only)
 priv struct PositionSchema {
-  position : StoredPosition
+  #custom.serde(rename="type")
+  kind : String
+  description : String
+  required : Bool
+  multiple : Bool
+  interactive : Bool
+  #custom.serde(skip_serializing_if="Option::is_none")
+  config : String?
 }
 
 ///|
-let position_schema_type_lens : @lens.Lens[String] = @lens.root().string("type")
-
-///|
-let position_schema_description_lens : @lens.Lens[String] = @lens.root().string(
-  "description",
-)
-
-///|
-let position_schema_required_lens : @lens.Lens[Bool] = @lens.root().bool(
-  "required",
-)
-
-///|
-let position_schema_multiple_lens : @lens.Lens[Bool] = @lens.root().bool(
-  "multiple",
-)
-
-///|
-let position_schema_interactive_lens : @lens.Lens[Bool] = @lens.root().bool(
-  "interactive",
-)
-
-///|
-let position_schema_config_lens : @lens.PresenceLens[String] = @lens.root()
-  .string("config")
-  .optional()
-
-///|
-impl ToJson for PositionSchema with fn to_json(self) -> Json {
-  let position = self.position
-  let metadata = position.metadata
-  let builder = @lens.JsonBuilder::JsonBuilder()
-  position_schema_type_lens.set_or_abort(
-    builder,
-    option_type_to_string(metadata.type_),
-  )
-  position_schema_description_lens.set_or_abort(builder, metadata.description)
-  position_schema_required_lens.set_or_abort(builder, metadata.required)
-  position_schema_multiple_lens.set_or_abort(builder, metadata.multiple)
-  position_schema_interactive_lens.set_or_abort(builder, metadata.interactive)
-  position_schema_config_lens.set_or_abort(builder, position.config)
-  builder.to_json()
+#custom.serde(encode_only)
+priv struct CommandSchema {
+  description : String
+  #custom.serde(skip_serializing_if="Option::is_none")
+  options : Map[String, OptionSchema]?
+  #custom.serde(skip_serializing_if="Option::is_none")
+  positionals : Map[String, PositionSchema]?
+  #custom.serde(skip_serializing_if="Option::is_none")
+  examples : Array[String]?
+  #custom.serde(skip_serializing_if="Option::is_none")
+  commands : Map[String, CommandSchema]?
 }
 
 ///|
-extend PositionSchema with ToJson::{to_json}
+#custom.serde(encode_only)
+priv struct CliSchema {
+  name : String
+  version : String
+  description : String
+  #custom.serde(skip_serializing_if="Option::is_none")
+  options : Map[String, OptionSchema]?
+  #custom.serde(skip_serializing_if="Option::is_none")
+  positionals : Map[String, PositionSchema]?
+  #custom.serde(skip_serializing_if="Option::is_none")
+  commands : Map[String, CommandSchema]?
+}
+
+///|
+fn schema_options(options : Array[StoredOption]) -> Map[String, OptionSchema]? {
+  if options.is_empty() {
+    return None
+  }
+  let result = Map([])
+  for option in options {
+    let metadata = option.metadata
+    result[option.name] = OptionSchema::{
+      kind: option_type_to_string(metadata.type_),
+      description: metadata.description,
+      required: metadata.required,
+      multiple: metadata.multiple,
+      interactive: metadata.interactive,
+      style: if metadata.type_ == BoolOpt {
+        Some("flag")
+      } else {
+        None
+      },
+      short: if metadata.short != no_short {
+        Some(metadata.short.to_string())
+      } else {
+        None
+      },
+      env: metadata.env,
+      config: option.config,
+      default_value: metadata.default_value,
+    }
+  }
+  Some(result)
+}
+
+///|
+fn schema_positionals(
+  positionals : Array[StoredPosition],
+) -> Map[String, PositionSchema]? {
+  if positionals.is_empty() {
+    return None
+  }
+  let result = Map([])
+  for position in positionals {
+    let metadata = position.metadata
+    result[position.name] = PositionSchema::{
+      kind: option_type_to_string(metadata.type_),
+      description: metadata.description,
+      required: metadata.required,
+      multiple: metadata.multiple,
+      interactive: metadata.interactive,
+      config: position.config,
+    }
+  }
+  Some(result)
+}
 
 ///|
 fn generate_example(cmd_path : String, options : Array[StoredOption]) -> String {
@@ -167,172 +139,45 @@ fn generate_example(cmd_path : String, options : Array[StoredOption]) -> String 
 }
 
 ///|
-priv struct CommandSchema {
-  command : CommandDef
-  path : String
-}
-
-///|
-let command_schema_description_lens : @lens.Lens[String] = @lens.root().string(
-  "description",
-)
-
-///|
-let command_schema_options_lens : @lens.PresenceLens[Json] = @lens.root()
-  .json("options")
-  .optional()
-
-///|
-let command_schema_positionals_lens : @lens.PresenceLens[Json] = @lens.root()
-  .json("positionals")
-  .optional()
-
-///|
-let command_schema_examples_lens : @lens.PresenceLens[Array[String]] = @lens.root()
-  .string("examples")
-  .array()
-  .optional()
-
-///|
-let command_schema_commands_lens : @lens.PresenceLens[Json] = @lens.root()
-  .json("commands")
-  .optional()
-
-///|
-impl ToJson for CommandSchema with fn to_json(self) -> Json {
-  let command = self.command
-  let builder = @lens.JsonBuilder::JsonBuilder()
-  command_schema_description_lens.set_or_abort(builder, command.description)
-  let options : Map[String, Json] = Map([])
-  for option in command.options {
-    options[option.name] = OptionSchema::{ option, }.to_json()
+fn schema_commands(
+  commands : Array[CommandDef],
+  parent_path : String,
+) -> Map[String, CommandSchema]? {
+  if commands.is_empty() {
+    return None
   }
-  command_schema_options_lens.set_or_abort(
-    builder,
-    if options.is_empty() {
-      None
-    } else {
-      Some(ToJson::to_json(options))
-    },
-  )
-  let positionals : Map[String, Json] = Map([])
-  for position in command.positionals {
-    positionals[position.name] = PositionSchema::{ position, }.to_json()
-  }
-  command_schema_positionals_lens.set_or_abort(
-    builder,
-    if positionals.is_empty() {
-      None
-    } else {
-      Some(ToJson::to_json(positionals))
-    },
-  )
-  command_schema_examples_lens.set_or_abort(
-    builder,
-    if command.examples.length() > 0 {
+  let result = Map([])
+  for command in commands {
+    let path = parent_path + " " + command.name
+    let examples = if !command.examples.is_empty() {
       Some(command.examples)
-    } else if command.options.length() > 0 || command.positionals.length() > 0 {
-      Some([generate_example(self.path, command.options)])
+    } else if !command.options.is_empty() || !command.positionals.is_empty() {
+      Some([generate_example(path, command.options)])
     } else {
       None
-    },
-  )
-  let subcommands : Map[String, Json] = Map([])
-  for subcommand in command.subcommands {
-    subcommands[subcommand.name] = CommandSchema::{
-      command: subcommand,
-      path: self.path + " " + subcommand.name,
-    }.to_json()
+    }
+    result[command.name] = CommandSchema::{
+      description: command.description,
+      options: schema_options(command.options),
+      positionals: schema_positionals(command.positionals),
+      examples,
+      commands: schema_commands(command.subcommands, path),
+    }
   }
-  command_schema_commands_lens.set_or_abort(
-    builder,
-    if subcommands.is_empty() {
-      None
-    } else {
-      Some(ToJson::to_json(subcommands))
-    },
-  )
-  builder.to_json()
+  Some(result)
 }
-
-///|
-extend CommandSchema with ToJson::{to_json}
-
-///|
-let cli_schema_name_lens : @lens.Lens[String] = @lens.root().string("name")
-
-///|
-let cli_schema_version_lens : @lens.Lens[String] = @lens.root().string(
-  "version",
-)
-
-///|
-let cli_schema_description_lens : @lens.Lens[String] = @lens.root().string(
-  "description",
-)
-
-///|
-let cli_schema_options_lens : @lens.PresenceLens[Json] = @lens.root()
-  .json("options")
-  .optional()
-
-///|
-let cli_schema_positionals_lens : @lens.PresenceLens[Json] = @lens.root()
-  .json("positionals")
-  .optional()
-
-///|
-let cli_schema_commands_lens : @lens.PresenceLens[Json] = @lens.root()
-  .json("commands")
-  .optional()
 
 ///|
 /// Serializes a `CliApp` into the JSON value used by `render_schema`.
 pub impl ToJson for CliApp with fn to_json(self) -> Json {
-  let builder = @lens.JsonBuilder::JsonBuilder()
-  cli_schema_name_lens.set_or_abort(builder, self.name)
-  cli_schema_version_lens.set_or_abort(builder, self.version)
-  cli_schema_description_lens.set_or_abort(builder, self.description)
-  let options : Map[String, Json] = Map([])
-  for option in self.root_options {
-    options[option.name] = OptionSchema::{ option, }.to_json()
-  }
-  cli_schema_options_lens.set_or_abort(
-    builder,
-    if options.is_empty() {
-      None
-    } else {
-      Some(ToJson::to_json(options))
-    },
-  )
-  let positionals : Map[String, Json] = Map([])
-  for position in self.root_positionals {
-    positionals[position.name] = PositionSchema::{ position, }.to_json()
-  }
-  cli_schema_positionals_lens.set_or_abort(
-    builder,
-    if positionals.is_empty() {
-      None
-    } else {
-      Some(ToJson::to_json(positionals))
-    },
-  )
-  let commands : Map[String, Json] = Map([])
-  for command in self.commands {
-    commands[command.name] = CommandSchema::{
-      command,
-      path: self.name + " " + command.name,
-    }.to_json()
-  }
-  cli_schema_commands_lens.set_or_abort(
-    builder,
-    if commands.is_empty() {
-      None
-    } else {
-      Some(ToJson::to_json(commands))
-    },
-  )
-  builder.to_json()
+  ToJson::to_json(CliSchema::{
+    name: self.name,
+    version: self.version,
+    description: self.description,
+    options: schema_options(self.root_options),
+    positionals: schema_positionals(self.root_positionals),
+    commands: schema_commands(self.commands, self.name),
+  })
 }
 
 ///|
