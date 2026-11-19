@@ -16,7 +16,6 @@ import {
   "moonbitlang/async@0.22.9",
   "moonbitlang/regexp@0.3.7",
   "moonbitlang/x@0.5.7",
-  "totto2727/lens@0.4.4",
   "mizchi/x@0.6.1",
 }
 

@@ -8,7 +8,6 @@ import {
   "moonbitlang/core/json",
   "moonbitlang/core/string",
   "totto2727/admiral/interactive",
-  "totto2727/lens",
 }
 
 import {
