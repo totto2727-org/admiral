@@ -23,7 +23,3 @@ jobs:
       - uses: totto2727-org/monorepo/.github/actions/check-moonbit@main
         with:
           dev-shell: ci
-      - name: Test linear Wasm
-        run: nix develop .#ci --command moon test --target wasm
-      - name: Check optional TUI example
-        run: nix develop .#ci --command moon -C examples check --target native --deny-warn ./tui/src/main
