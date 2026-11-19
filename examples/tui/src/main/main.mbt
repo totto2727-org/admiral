@@ -11,7 +11,7 @@ async fn main {
     "project",
     description="Project selected by name",
     required=true,
-    interactive?=@terminal.project_picker(query),
+    interactive=@terminal.project_picker(query),
   )
   let app = @admiral.CliApp::CliApp(
     name="interactive-project",

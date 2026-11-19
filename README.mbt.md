@@ -86,18 +86,18 @@ Commands can contain subcommands and each command owns its options, positions, e
 
 ### Interactive input
 
-Set `interactive` on the option or positional that owns the editor. The editor receives the read-only `Context` and the current value after `argv > env > config > default` resolution. It can replace only its own field. Return `None` to keep the current value or raise an error to stop execution. An editor can supply a missing required value, but dispatch fails if that value is still missing after the editor runs.
+Set `interactive` on the option or positional that owns the editor. The editor receives the read-only `Context` and the current value after `argv > env > config > default` resolution. It can replace only its own field. Return `None` to keep the current value. To stop dispatch, raise an error: `CliApp::run` propagates the original error to its caller without invoking the command handler. An editor can supply a missing required value, but dispatch fails if that value is still missing after the editor runs.
 
 ```moonbit
 let query = @admiral.string("query", env="ADMIRAL_PROJECT_QUERY", config="query")
 let project = @admiral.position_string(
   "project",
   required=true,
-  interactive?=@terminal.project_picker(query),
+  interactive=@terminal.project_picker(query),
 )
 ```
 
-In the [terminal example](examples/tui/src/main/main.mbt), the project picker reads `query` from `Context` and returns only the selected `project`. The [adapter](examples/tui/src/picker/picker.mbt) registers the editor only when a TTY is available. Run it from the repository root with `moon -C examples run --target native ./tui/src/main -- --query lens`. With redirected stdin, pass the required project explicitly.
+In the [terminal example](examples/tui/src/main/main.mbt), the project picker reads `query` from `Context` and returns only the selected `project`. Run it from the repository root with `moon -C examples run --target native ./tui/src/main -- --query lens`. Without a TTY, the [adapter](examples/tui/src/picker/picker.mbt) keeps an explicit project or selects a unique match from the query without prompting. A query with zero or multiple matches is an error when no project was supplied.
 
 Admiral does not check for a TTY or disable editors on Wasm. An application can register a different editor wherever its host provides the required input. The `totto2727/admiral/interactive` package defines the portable `Editor` contract and provides `from_value` for editors that only need the field's current value.
 

@@ -96,7 +96,7 @@ async test "an editor can supply a required option or positional" {
 }
 
 ///|
-async test "empty edits cannot satisfy a required field and errors abort dispatch" {
+async test "empty edits cannot satisfy a required field" {
   let ran = Ref(false)
   let files = @admiral.strings("files", required=true, interactive=(_, _) => {
     Some([])
@@ -110,8 +110,19 @@ async test "empty edits cannot satisfy a required field and errors abort dispatc
     err => Err(err)
   }
   assert_true(outcome is Err(Failure(_)))
+  assert_false(ran.val)
+}
+
+///|
+priv suberror QueryError {
+  AmbiguousQuery(String)
+}
+
+///|
+async test "an editor's typed error propagates unchanged and aborts dispatch" {
+  let ran = Ref(false)
   let project = @admiral.position_string("project", interactive=(_, _) => {
-    fail("selection cancelled")
+    raise AmbiguousQuery("sdk")
   })
   let cancelled = @admiral.CliApp::CliApp(
     name="demo",
@@ -121,7 +132,7 @@ async test "empty edits cannot satisfy a required field and errors abort dispatc
   let outcome = Ok(cancelled.run(argv=Some(["before"]), env={})) catch {
     err => Err(err)
   }
-  assert_true(outcome is Err(Failure(_)))
+  assert_true(outcome is Err(AmbiguousQuery("sdk")))
   assert_false(ran.val)
 }
 
