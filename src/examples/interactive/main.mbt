@@ -1,4 +1,170 @@
 ///|
+struct Project {
+  name : String
+  description : String
+}
+
+///|
+let projects : Array[Project] = [
+  { name: "admiral", description: "Declarative CLI builder", },
+  { name: "codex-sdk", description: "Codex SDK for MoonBit", },
+  { name: "lens", description: "Typed JSON lenses", },
+  { name: "workgraph-core", description: "Agent workflow runtime", },
+  { name: "opencode-sdk", description: "OpenCode SDK for MoonBit", },
+]
+
+///|
+fn search_projects(query : String) -> Array[Project] {
+  let normalized = query.to_lower()
+  if normalized.length() == 0 {
+    return projects.copy()
+  }
+  projects
+  .iter()
+  .filter(project => {
+    project.name.to_lower().contains(normalized) ||
+    project.description.to_lower().contains(normalized)
+  })
+  .collect()
+}
+
+///|
+fn drop_last_character(value : String) -> String {
+  let characters : Array[Char] = value.iter().collect()
+  if characters.length() == 0 {
+    return value
+  }
+  characters
+  .iter()
+  .take(characters.length() - 1)
+  .map(character => character.to_string())
+  .collect()
+  .join("")
+}
+
+///|
+async fn select_project(
+  initial_project : String?,
+  initial_query : String,
+) -> String? {
+  let query = Ref(
+    if initial_query.length() > 0 {
+      initial_query
+    } else {
+      initial_project.unwrap_or("")
+    },
+  )
+  let selected_index = Ref(0)
+  let result : Ref[String?] = Ref(None)
+
+  fn filtered_projects() -> Array[Project] {
+    search_projects(query.val)
+  }
+
+  fn reset_selection() -> Unit {
+    selected_index.val = 0
+  }
+
+  fn render() {
+    let matches = filtered_projects()
+    let rows = []
+    for index, project in matches {
+      let selected = index == selected_index.val
+      rows.push(
+        @tui.text(
+          (if selected { "> " } else { "  " }) +
+          project.name +
+          "  " +
+          project.description,
+          fg=if selected { "cyan" } else { "white" },
+          bold=selected,
+        ),
+      )
+    }
+    if rows.length() == 0 {
+      rows.push(@tui.text("  No matching projects", fg="yellow"))
+    }
+    @tui.column(
+      padding=1.0,
+      gap=1.0,
+      border="rounded",
+      border_color="cyan",
+      [
+        @tui.text("Select a project", fg="cyan", bold=true),
+        @tui.text("Search: " + query.val + "_", fg="yellow"),
+      ] +
+      rows +
+      [@tui.text("Type to search | ↑↓ move | Enter select | Esc cancel")],
+    )
+  }
+
+  fn handle_event(event : @tui.InputEvent) -> Bool {
+    match event {
+      @tui.InputEvent::Key(key) =>
+        match key {
+          @tui.KeyEvent::Special(@tui.SpecialKey::Escape, _)
+          | @tui.KeyEvent::Char('c', @tui.KeyModifier::Ctrl) => false
+          @tui.KeyEvent::Special(@tui.SpecialKey::Enter, _) => {
+            let matches = filtered_projects()
+            if matches.length() > 0 {
+              result.val = Some(matches[selected_index.val].name)
+            }
+            false
+          }
+          @tui.KeyEvent::Special(@tui.SpecialKey::Up, _) => {
+            if selected_index.val > 0 {
+              selected_index.val = selected_index.val - 1
+            }
+            true
+          }
+          @tui.KeyEvent::Special(@tui.SpecialKey::Down, _) => {
+            let matches = filtered_projects()
+            if selected_index.val + 1 < matches.length() {
+              selected_index.val = selected_index.val + 1
+            }
+            true
+          }
+          @tui.KeyEvent::Special(@tui.SpecialKey::Backspace, _) => {
+            query.val = drop_last_character(query.val)
+            reset_selection()
+            true
+          }
+          @tui.KeyEvent::Char(character, @tui.KeyModifier::None)
+          | @tui.KeyEvent::Char(character, @tui.KeyModifier::Shift) => {
+            query.val = query.val + character.to_string()
+            reset_selection()
+            true
+          }
+          _ => true
+        }
+      _ => true
+    }
+  }
+
+  let (width, height) = @tui.get_terminal_size()
+  let app = @tui.VNodeApp::new(width, height)
+  fn render_frame() -> Unit {
+    @tui.print_raw(app.render_frame(render()))
+  }
+  @tui.enable_raw_mode()
+  defer @tui.cleanup_stdin()
+  @tui.print_raw(@tui.VNodeApp::init_terminal())
+  defer @tui.print_raw(@tui.VNodeApp::restore_terminal())
+  render_frame()
+  while true {
+    let key = @tui.read_key()
+    if key.length() == 0 {
+      @async.sleep(10)
+    } else if handle_event(@tui.parse_input(key)) {
+      render_frame()
+    } else {
+      break
+    }
+  }
+  result.val
+}
+
+///|
 async fn main {
   let project = @admiral.position_string(
     "project",
@@ -6,21 +172,34 @@ async fn main {
     required=true,
     interactive=true,
   )
+  let query = @admiral.string(
+    "query",
+    short='q',
+    description="Initial project search",
+    env="ADMIRAL_PROJECT_QUERY",
+    default=Some(""),
+    interactive=true,
+  )
   let app = @admiral.CliApp::CliApp(
     name="interactive-project",
     version="0.1.0",
-    description="Admiral line prompt example",
+    description="Admiral interactive project search example",
     positionals=[project],
+    options=[query],
     interactive=Some(input => {
-      if input.to_context().get_string(project) is None {
-        println("Enter a project name:")
-        let name = read_project_name().trim().to_owned()
-        guard name != "" else { fail("no project name entered") }
-        input.set_string(project, name)
+      let initial = input.to_context()
+      match
+        select_project(
+          initial.get_string(project),
+          initial.get_string(query).unwrap_or(""),
+        ) {
+        Some(selected) => input.set_string(project, selected)
+        None => fail("project selection cancelled")
       }
     }),
     run=Some(ctx => {
-      println("Selected project: " + ctx.get_string_required(project))
+      let selected = ctx.get_string_required(project)
+      println("Selected project: " + selected)
     }),
   )
   app.run()

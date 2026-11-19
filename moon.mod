@@ -1,6 +1,6 @@
 name = "totto2727/admiral"
 
-version = "0.6.6"
+version = "0.6.7"
 
 readme = "README.mbt.md"
 
@@ -18,6 +18,7 @@ import {
   "moonbitlang/x@0.5.7",
   "totto2727/lens@0.4.4",
   "mizchi/x@0.6.1",
+  "totto2727/tui@0.10.2",
 }
 
 preferred_target = "js"
