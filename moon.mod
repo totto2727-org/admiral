@@ -1,6 +1,6 @@
 name = "totto2727/admiral"
 
-version = "0.6.6"
+version = "0.6.7"
 
 readme = "README.mbt.md"
 
