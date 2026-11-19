@@ -31,7 +31,7 @@ test "string() with default value" {
 
 ///|
 test "string() retains interactive input metadata" {
-  let opt = @admiral.string("project", interactive=true)
+  let opt = @admiral.string("project", interactive=(_, _) => None)
   inspect(opt.metadata.interactive, content="true")
 }
 

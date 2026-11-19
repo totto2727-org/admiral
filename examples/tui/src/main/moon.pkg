@@ -2,7 +2,7 @@ supported_targets = "js+native"
 
 import {
   "totto2727/admiral",
-  "totto2727/tui",
+  "totto2727/admiral-tui/picker" @terminal,
   "moonbitlang/async",
 }
 

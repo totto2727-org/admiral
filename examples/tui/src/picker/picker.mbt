@@ -1,5 +1,5 @@
 ///|
-struct Project {
+priv struct Project {
   name : String
   description : String
 }
@@ -165,42 +165,15 @@ async fn select_project(
 }
 
 ///|
-async fn main {
-  let project = @admiral.position_string(
-    "project",
-    description="Project selected by name",
-    required=true,
-    interactive=true,
-  )
-  let query = @admiral.string(
-    "query",
-    short='q',
-    description="Initial project search",
-    env="ADMIRAL_PROJECT_QUERY",
-    default=Some(""),
-    interactive=true,
-  )
-  let app = @admiral.CliApp::CliApp(
-    name="interactive-project",
-    version="0.1.0",
-    description="Admiral interactive project search example",
-    positionals=[project],
-    options=[query],
-    interactive=Some(input => {
-      let initial = input.to_context()
-      match
-        select_project(
-          initial.get_string(project),
-          initial.get_string(query).unwrap_or(""),
-        ) {
-        Some(selected) => input.set_string(project, selected)
-        None => fail("project selection cancelled")
-      }
-    }),
-    run=Some(ctx => {
-      let selected = ctx.get_string_required(project)
-      println("Selected project: " + selected)
-    }),
-  )
-  app.run()
+/// Registers a field editor only when the process has a terminal.
+pub fn project_picker(
+  query : @admiral.OptionDef[String],
+) -> @admiral.FieldEditor[String]? {
+  guard @io.is_tty() else { return None }
+  Some((ctx, initial) => {
+    match select_project(initial, ctx.get_string(query).unwrap_or("")) {
+      Some(selected) => Some(selected)
+      None => fail("project selection cancelled")
+    }
+  })
 }

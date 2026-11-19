@@ -30,6 +30,6 @@ test "position helpers retain config keys" {
 
 ///|
 test "position_string() retains interactive input metadata" {
-  let input = @admiral.position_string("input", interactive=true)
+  let input = @admiral.position_string("input", interactive=(_, _) => None)
   inspect(input.metadata.interactive, content="true")
 }

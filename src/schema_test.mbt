@@ -242,8 +242,10 @@ test "render_schema includes interactive option and position metadata" {
   let app = @admiral.CliApp::CliApp(name="test", commands=[
     @admiral.CommandDef::CommandDef(
       name="select",
-      options=[@admiral.string("query", interactive=true)],
-      positionals=[@admiral.position_string("project", interactive=true)],
+      options=[@admiral.string("query", interactive=(_, _) => None)],
+      positionals=[
+        @admiral.position_string("project", interactive=(_, _) => None),
+      ],
     ),
   ])
   let schema = app.render_schema()

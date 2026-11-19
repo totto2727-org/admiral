@@ -13,9 +13,11 @@ fn[T] option_def(
   required : Bool,
   default_value : String?,
   multiple : Bool,
-  interactive : Bool,
+  interactive : FieldEditor[T]?,
+  read : (Context, OptionDef[T]) -> T? raise,
+  write : (Context, String, T, Bool) -> Context,
 ) -> OptionDef[T] {
-  {
+  let field : OptionDef[T] = {
     name,
     config,
     metadata: {
@@ -26,9 +28,11 @@ fn[T] option_def(
       required,
       default_value,
       multiple,
-      interactive,
+      interactive: interactive is Some(_),
     },
+    editor: None,
   }
+  { ..field, editor: field_edit(field, interactive, read, write, required), }
 }
 
 ///|
@@ -43,7 +47,7 @@ pub fn string(
   config? : String,
   required~ : Bool = false,
   default~ : String? = None,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[String],
 ) -> OptionDef[String] {
   option_def(
     name,
@@ -56,6 +60,8 @@ pub fn string(
     default,
     false,
     interactive,
+    (ctx, field) => ctx.get_string(field),
+    write_string,
   )
 }
 
@@ -69,7 +75,7 @@ pub fn strings(
   env? : String,
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[String]],
 ) -> OptionDef[Array[String]] {
   option_def(
     name,
@@ -82,6 +88,8 @@ pub fn strings(
     None,
     true,
     interactive,
+    (ctx, field) => nonempty(ctx.get_strings(field)),
+    write_strings,
   )
 }
 
@@ -94,7 +102,7 @@ pub fn bool(
   description~ : String = "",
   env? : String,
   config? : String,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Bool],
 ) -> OptionDef[Bool] {
   option_def(
     name,
@@ -107,6 +115,8 @@ pub fn bool(
     None,
     false,
     interactive,
+    (ctx, field) => Some(ctx.get_bool(field)),
+    write_flag,
   )
 }
 
@@ -121,7 +131,7 @@ pub fn int(
   config? : String,
   required~ : Bool = false,
   default~ : Int32? = None,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Int32],
 ) -> OptionDef[Int32] {
   option_def(
     name,
@@ -134,6 +144,8 @@ pub fn int(
     default.map(fn(value) { value.to_string() }),
     false,
     interactive,
+    Context::get_int,
+    write_scalar,
   )
 }
 
@@ -147,7 +159,7 @@ pub fn ints(
   env? : String,
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[Int32]],
 ) -> OptionDef[Array[Int32]] {
   option_def(
     name,
@@ -160,6 +172,8 @@ pub fn ints(
     None,
     true,
     interactive,
+    (ctx, field) => nonempty(ctx.get_ints(field)),
+    write_array,
   )
 }
 
@@ -173,7 +187,7 @@ pub fn int64(
   config? : String,
   required~ : Bool = false,
   default~ : Int64? = None,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Int64],
 ) -> OptionDef[Int64] {
   option_def(
     name,
@@ -186,6 +200,8 @@ pub fn int64(
     default.map(fn(value) { value.to_string() }),
     false,
     interactive,
+    Context::get_int64,
+    write_scalar,
   )
 }
 
@@ -198,7 +214,7 @@ pub fn int64s(
   env? : String,
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[Int64]],
 ) -> OptionDef[Array[Int64]] {
   option_def(
     name,
@@ -211,6 +227,8 @@ pub fn int64s(
     None,
     true,
     interactive,
+    (ctx, field) => nonempty(ctx.get_int64s(field)),
+    write_array,
   )
 }
 
@@ -224,7 +242,7 @@ pub fn uint(
   config? : String,
   required~ : Bool = false,
   default~ : UInt32? = None,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[UInt32],
 ) -> OptionDef[UInt32] {
   option_def(
     name,
@@ -237,6 +255,8 @@ pub fn uint(
     default.map(fn(value) { value.to_string() }),
     false,
     interactive,
+    Context::get_uint,
+    write_scalar,
   )
 }
 
@@ -249,7 +269,7 @@ pub fn uints(
   env? : String,
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[UInt32]],
 ) -> OptionDef[Array[UInt32]] {
   option_def(
     name,
@@ -262,6 +282,8 @@ pub fn uints(
     None,
     true,
     interactive,
+    (ctx, field) => nonempty(ctx.get_uints(field)),
+    write_array,
   )
 }
 
@@ -275,7 +297,7 @@ pub fn uint64(
   config? : String,
   required~ : Bool = false,
   default~ : UInt64? = None,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[UInt64],
 ) -> OptionDef[UInt64] {
   option_def(
     name,
@@ -288,6 +310,8 @@ pub fn uint64(
     default.map(fn(value) { value.to_string() }),
     false,
     interactive,
+    Context::get_uint64,
+    write_scalar,
   )
 }
 
@@ -300,7 +324,7 @@ pub fn uint64s(
   env? : String,
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[UInt64]],
 ) -> OptionDef[Array[UInt64]] {
   option_def(
     name,
@@ -313,6 +337,8 @@ pub fn uint64s(
     None,
     true,
     interactive,
+    (ctx, field) => nonempty(ctx.get_uint64s(field)),
+    write_array,
   )
 }
 
@@ -326,7 +352,7 @@ pub fn double(
   config? : String,
   required~ : Bool = false,
   default~ : Double? = None,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Double],
 ) -> OptionDef[Double] {
   option_def(
     name,
@@ -339,6 +365,8 @@ pub fn double(
     default.map(fn(value) { value.to_string() }),
     false,
     interactive,
+    Context::get_double,
+    write_scalar,
   )
 }
 
@@ -351,7 +379,7 @@ pub fn doubles(
   env? : String,
   config? : String,
   required~ : Bool = false,
-  interactive~ : Bool = false,
+  interactive? : FieldEditor[Array[Double]],
 ) -> OptionDef[Array[Double]] {
   option_def(
     name,
@@ -364,5 +392,7 @@ pub fn doubles(
     None,
     true,
     interactive,
+    (ctx, field) => nonempty(ctx.get_doubles(field)),
+    write_array,
   )
 }
