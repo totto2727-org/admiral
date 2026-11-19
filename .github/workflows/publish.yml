@@ -16,9 +16,6 @@ jobs:
       - uses: totto2727-org/monorepo/.github/actions/setup-nix@main
         with:
           dev-shell: ci
-      - uses: totto2727-org/monorepo/.github/actions/setup-moonbit@main
-        with:
-          dev-shell: ci
       - uses: totto2727-org/monorepo/.github/actions/publish-moonbit@main
         with:
           dev-shell: ci
